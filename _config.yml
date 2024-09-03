@@ -1,4 +1,4 @@
-title: 离原春草 - Github Pages
+title: 离原春草
 description: > # this means to ignore newlines until "baseurl:"
   发上等愿，结中等缘，享下等福；
   择高处立，寻平处住，向宽处行。
@@ -10,7 +10,9 @@ site-twitter: #if your site has a twitter account, enter it here
 # Author Settings
 author: 离原春草 # add your name
 author-img: Grass.jpg # add your photo
-about-author: 游戏引擎行路人 # add description
+about-author: 
+  发上等愿，结中等缘，享下等福；
+  择高处立，寻平处住，向宽处行。
 social-twitter: # add your Twitter handle
 social-facebook: # add your Facebook handle
 social-github: Gerigory # add your Github handle
