@@ -1,8 +1,8 @@
 ---
 layout: post
-title: [Learning Notes] - Banding in Games - A Noisy Rant
+title: [Learning Notes] - Banding in Games - A Noisy Rant all zero
 date: 2024-9-4 00:19:40
-img: Dithering-avoids-banding.png # Add image post (optional)
+img: Dithering avoids banding.png # Add image post (optional)
 fig-caption: # Add figcaption (optional)
 tags: [Banding, Noise, Dithering]
 ---
