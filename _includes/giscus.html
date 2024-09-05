@@ -1,24 +1,59 @@
 <section class="comment-area">
   <div class="comment-wrapper">
-	<script>
-      (function() {
-          var d = document, s = d.createElement('script');
-          s.src="https://giscus.app/client.js"
-          s.data-repo="Gerigory/Gerigory.github.io"
-          s.data-repo-id="R_kgDOMsP0jA"
-          s.data-category="General"
-          s.data-category-id="DIC_kwDOMsP0jM4CiNzL"
-          s.data-mapping="pathname"
-          s.data-strict="0"
-          s.data-reactions-enabled="1"
-          s.data-emit-metadata="0"
-          s.data-input-position="top"
-          s.data-theme="light"
-          s.data-lang="zh-CN"
-          s.crossorigin="anonymous"
-          s.setAttribute('data-timestamp', +new Date());
-          (d.head || d.body).appendChild(s);
-      })();
-    </script>
+	{% if page.meta.comments %}
+	  <h2 id="__comments">{{ lang.t("meta.comments") }}</h2>
+	  <!-- Insert generated snippet here -->
+	  <script src="https://giscus.app/client.js"
+        data-repo="Gerigory/Gerigory.github.io"
+        data-repo-id="R_kgDOMsP0jA"
+        data-category="General"
+        data-category-id="DIC_kwDOMsP0jM4CiNzL"
+        data-mapping="pathname"
+        data-strict="0"
+        data-reactions-enabled="1"
+        data-emit-metadata="0"
+        data-input-position="top"
+        data-theme="light"
+        data-lang="zh-CN"
+        crossorigin="anonymous"
+        async>
+	  </script>
+
+	  <!-- Synchronize Giscus theme with palette -->
+	  <script>
+		var giscus = document.querySelector("script[src*=giscus]")
+
+		// Set palette on initial load
+		var palette = __md_get("__palette")
+		if (palette && typeof palette.color === "object") {
+		  var theme = palette.color.scheme === "slate"
+			? "transparent_dark"
+			: "light"
+
+		  // Instruct Giscus to set theme
+		  giscus.setAttribute("data-theme", theme) 
+		}
+
+		// Register event handlers after documented loaded
+		document.addEventListener("DOMContentLoaded", function() {
+		  var ref = document.querySelector("[data-md-component=palette]")
+		  ref.addEventListener("change", function() {
+			var palette = __md_get("__palette")
+			if (palette && typeof palette.color === "object") {
+			  var theme = palette.color.scheme === "slate"
+				? "transparent_dark"
+				: "light"
+
+			  // Instruct Giscus to change theme
+			  var frame = document.querySelector(".giscus-frame")
+			  frame.contentWindow.postMessage(
+				{ giscus: { setConfig: { theme } } },
+				"https://giscus.app"
+			  )
+			}
+		  })
+		})
+	  </script>
+	{% endif %}
   </div>
 </section> <!-- End Comment Area -->
