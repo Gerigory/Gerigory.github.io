@@ -45,4 +45,4 @@
 
 ## 其他
 
-1. 可以通过Utterances来添加comment功能
+1. 可以通过giscus来添加comment功能，参考[Commenting is Now Available Thanks to Giscus](https://www.patrickthurmond.com/blog/2023/12/11/commenting-is-available-now-thanks-to-giscus/)
