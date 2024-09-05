@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Learning Notes - Banding in Games - A Noisy Rant all zero - all zero
+title: Learning Notes - Banding in Games - A Noisy Rant all zero
 date: 2024-09-05
 img: PageCovers/Dithering-avoids-banding.png # Add image post (optional)
 fig-caption: # Add figcaption (optional)
