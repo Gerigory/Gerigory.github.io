@@ -2,12 +2,12 @@
 layout: post
 title: 【Unreal Fest 2024】Optimizing Survival Games for Mobile
 date: 2024-09-11
-img: 【Unreal Fest 2024】Optimizing-Survival-Games-for-Mobile/0.png # Add image post (optional)
+img: 【Unreal-Fest-2024】Optimizing-Survival-Games-for-Mobile/0.png # Add image post (optional)
 fig-caption: # Add figcaption (optional)
 tags: [Unreal, Optimization, Mobile]
 description: 本文分享的是Unreal在Unreal Fest 2024上介绍的移动端性能优化相关要点
 ---
-![](https://gerigory.github.io/assets/img/【Unreal Fest 2024】Optimizing-Survival-Games-for-Mobile/1.png)
+![](https://gerigory.github.io/assets/img/【Unreal-Fest-2024】Optimizing-Survival-Games-for-Mobile/1.png)
 
 本次talk目标是解决移动端上的这些问题：
 
@@ -19,12 +19,12 @@ description: 本文分享的是Unreal在Unreal Fest 2024上介绍的移动端性
 5.     音频性能
 6.     内存profile
 
-![](https://gerigory.github.io/assets/img/【Unreal Fest 2024】Optimizing-Survival-Games-for-Mobile/2.png)
+![](https://gerigory.github.io/assets/img/【Unreal-Fest-2024】Optimizing-Survival-Games-for-Mobile/2.png)
 
 - 主机跟PC上，可以通过compute shader对GPU Scene中的ISM数据进行逐instance的剔除，效率很高。但如果在移动端开启这个特性，这个indirection逻辑（可见instance的ID Buffer）的成本就很高（需要先读取ID，再基于ID从SSBO中获取Instance等数据，是SSBO读取成本高吗？）
 - GPU Scene的经典实现方案，是将（Instance）数据存储到SSBO（[Shader Storage Buffer Object](https://blog.csdn.net/What_can_you_do/article/details/125620229)，一种shader中可读可写的buffer，尺寸比UBO大，基本没有限制，但是速度慢于UBO，通常用于CS）中，之后通过VS对SSBO进行采样，但不是所有的移动端设备都支持SSBO
 
-![](https://gerigory.github.io/assets/img/【Unreal Fest 2024】Optimizing-Survival-Games-for-Mobile/3.png)
+![](https://gerigory.github.io/assets/img/【Unreal-Fest-2024】Optimizing-Survival-Games-for-Mobile/3.png)
 
 这里给出针对移动端的优化方案：
 
@@ -32,15 +32,15 @@ description: 本文分享的是Unreal在Unreal Fest 2024上介绍的移动端性
 2. 输出的Buffer也不是低速的SSBO，而是高速的UBO，因为只有可见的Instance，所以尺寸够用（主机跟移动端这里需要做一个伸缩，具体数据上图有给出）
 3. 在Instance数目较多的时候，往往不能一个drawcall画完所有instance，这里通常会需要通过多个批次完成提交，不过这些批次之间本身没有状态切换，所以通常来说速度还是会比通常的drawcall要快很多
 
-![](https://gerigory.github.io/assets/img/【Unreal Fest 2024】Optimizing-Survival-Games-for-Mobile/4.png)
+![](https://gerigory.github.io/assets/img/【Unreal-Fest-2024】Optimizing-Survival-Games-for-Mobile/4.png)
 
 看起来这个特性是UE本身就支持了的，只需要直接启用测试即可。
 
-![](https://gerigory.github.io/assets/img/【Unreal Fest 2024】Optimizing-Survival-Games-for-Mobile/5.png)
+![](https://gerigory.github.io/assets/img/【Unreal-Fest-2024】Optimizing-Survival-Games-for-Mobile/5.png)
 
 再来看看移动端上怎么保证黑暗环境下的局部光照效果：前向管线下，由于性能问题，局部光表现实在欠佳
 
-![](https://gerigory.github.io/assets/img/【Unreal Fest 2024】Optimizing-Survival-Games-for-Mobile/6.png)
+![](https://gerigory.github.io/assets/img/【Unreal-Fest-2024】Optimizing-Survival-Games-for-Mobile/6.png)
 
 因为该项目不能用延迟管线，所以这里取了个巧，借用了UE前向管线中的prepass。
 
@@ -57,25 +57,25 @@ RT格式给出如下：
 
 下面看下具体的实现细节
 
-![](https://gerigory.github.io/assets/img/【Unreal Fest 2024】Optimizing-Survival-Games-for-Mobile/7.png)
+![](https://gerigory.github.io/assets/img/【Unreal-Fest-2024】Optimizing-Survival-Games-for-Mobile/7.png)
 
 首先会通过tile based culling来得到每盏局部光源影响的tile list，之后在前面介绍的prepass阶段，就只需要渲染那些被光照影响的tile，按照instance的方式绘制即可
 
-![](https://gerigory.github.io/assets/img/【Unreal Fest 2024】Optimizing-Survival-Games-for-Mobile/8.png)
+![](https://gerigory.github.io/assets/img/【Unreal-Fest-2024】Optimizing-Survival-Games-for-Mobile/8.png)
 
 在UE中的开启方式，可以通过config文件为给定的平台启用
 
-![](https://gerigory.github.io/assets/img/【Unreal Fest 2024】Optimizing-Survival-Games-for-Mobile/9.png)
+![](https://gerigory.github.io/assets/img/【Unreal-Fest-2024】Optimizing-Survival-Games-for-Mobile/9.png)
 
 前向渲染中，某个局部光会有多个变体（适配不同的情景，即shader宏），在运行时会当条件变化的时候，就会需要应用不同的变体，那么此前为某个staticmesh cache的mesh draw command(MDC)就会失效，这个时候就需要重新创建，而这个会造成毛刺现象。
 
 为了避免毛刺的产生，这里的做法是即使local light对物件不生效（范围之外），也继续执行local light的shading逻辑（如贴图采样），通过一定的GPU浪费来规避CPU的毛刺。
 
-![](https://gerigory.github.io/assets/img/【Unreal Fest 2024】Optimizing-Survival-Games-for-Mobile/10.png)
+![](https://gerigory.github.io/assets/img/【Unreal-Fest-2024】Optimizing-Survival-Games-for-Mobile/10.png)
 
 这个功能只需要启用这个命令行就可以生效了
 
-![](https://gerigory.github.io/assets/img/【Unreal Fest 2024】Optimizing-Survival-Games-for-Mobile/11.png)
+![](https://gerigory.github.io/assets/img/【Unreal-Fest-2024】Optimizing-Survival-Games-for-Mobile/11.png)
 
 PSO Gathering有如下的一些问题：
 
@@ -85,7 +85,7 @@ PSO Gathering有如下的一些问题：
    1. 这个过程是在游戏开始的时候触发，也就是说，会影响到loading时长（可能会到十几分钟）
    2. 这个编译过程目的是生成各个平台所需要的shader二进制文件（PSO存储的是中间字节码，需要一个文档对这块进行明晰），而实际上我们正常使用的可能只是所有编译好的文件的5%到10%，浪费较大
 
-![](https://gerigory.github.io/assets/img/【Unreal Fest 2024】Optimizing-Survival-Games-for-Mobile/12.png)
+![](https://gerigory.github.io/assets/img/【Unreal-Fest-2024】Optimizing-Survival-Games-for-Mobile/12.png)
 
 这里给出一个新的预缓存方案，该方案的做了如下几点优化：
 
@@ -99,11 +99,11 @@ PSO Gathering有如下的一些问题：
       3. 或者不予显示？
 4. android这边有一些限制，GL不支持，Vulkan有限制（具体没太听清楚，后面可以查下资料了解一下细节）
 
-![](https://gerigory.github.io/assets/img/【Unreal Fest 2024】Optimizing-Survival-Games-for-Mobile/13.png)
+![](https://gerigory.github.io/assets/img/【Unreal-Fest-2024】Optimizing-Survival-Games-for-Mobile/13.png)
 
 这是unreal insights下截取的ios precaching的截图，这里总计用了5个线程池，从截图的消耗来看，precache的耗时最多可以去到300+ms，还是非常恐怖的，而这也表明了precache的必要性
 
-![](https://gerigory.github.io/assets/img/【Unreal Fest 2024】Optimizing-Survival-Games-for-Mobile/14.png)
+![](https://gerigory.github.io/assets/img/【Unreal-Fest-2024】Optimizing-Survival-Games-for-Mobile/14.png)
 
 这里做一下总结，这里的这个优化将可以带来如下的提升：
 
@@ -119,15 +119,15 @@ PSO Gathering有如下的一些问题：
 2. 当有问题的时候（材质在某个平台上的precache有问题），发现的时机会比较滞后（在运行时才发现）
 3. 容易出现材质没有precache而导致的毛刺
 
-![](https://gerigory.github.io/assets/img/【Unreal Fest 2024】Optimizing-Survival-Games-for-Mobile/15.png)
+![](https://gerigory.github.io/assets/img/【Unreal-Fest-2024】Optimizing-Survival-Games-for-Mobile/15.png)
 
 这个功能的支持要到5.4（Android）跟5.5（Metal）了，可以提前关注，有需要就做合入
 
-![](https://gerigory.github.io/assets/img/【Unreal Fest 2024】Optimizing-Survival-Games-for-Mobile/16.png)
+![](https://gerigory.github.io/assets/img/【Unreal-Fest-2024】Optimizing-Survival-Games-for-Mobile/16.png)
 
 下面看下性能相关的内容
 
-![](https://gerigory.github.io/assets/img/【Unreal Fest 2024】Optimizing-Survival-Games-for-Mobile/17.png)
+![](https://gerigory.github.io/assets/img/【Unreal-Fest-2024】Optimizing-Survival-Games-for-Mobile/17.png)
 
 先来看下音频部分的问题：
 
@@ -143,19 +143,19 @@ PSO Gathering有如下的一些问题：
 
 目前优化已经在UE5.4上了，下面展示一些具体的代码优化细节
 
-![](https://gerigory.github.io/assets/img/【Unreal Fest 2024】Optimizing-Survival-Games-for-Mobile/18.png)
+![](https://gerigory.github.io/assets/img/【Unreal-Fest-2024】Optimizing-Survival-Games-for-Mobile/18.png)
 
 
 
-![](https://gerigory.github.io/assets/img/【Unreal Fest 2024】Optimizing-Survival-Games-for-Mobile/19.png)
+![](https://gerigory.github.io/assets/img/【Unreal-Fest-2024】Optimizing-Survival-Games-for-Mobile/19.png)
 
 
 
-![](https://gerigory.github.io/assets/img/【Unreal Fest 2024】Optimizing-Survival-Games-for-Mobile/20.png)
+![](https://gerigory.github.io/assets/img/【Unreal-Fest-2024】Optimizing-Survival-Games-for-Mobile/20.png)
 
 接下来看看C++改动构建耗时的问题，这些问题主要在android手机上比较明显（ios不也存在吗？还有windows）：只简单更改几行代码，需要等很久才能完成Package & Lauch，比如大型项目上可能会去到5min（堡垒） 或者更长时间（主要耗时在repackaing以及re-installing环节）。
 
-![](https://gerigory.github.io/assets/img/【Unreal Fest 2024】Optimizing-Survival-Games-for-Mobile/21.png)
+![](https://gerigory.github.io/assets/img/【Unreal-Fest-2024】Optimizing-Survival-Games-for-Mobile/21.png)
 
 andriod打包流程可以抽象为上述的示意图：
 
@@ -167,37 +167,37 @@ andriod打包流程可以抽象为上述的示意图：
    1.  apk本质是一个zip文件，这里为了加速，不用重新创建整个apk，而只是将新的内容添加到末尾，之后调整下指向该数据的index就行，不过这种方式就会导致每次编译一次，生成的apk文件尺寸就会遭遇一次暴涨
    2. 要想解决apk尺寸暴涨的问题，就得删掉重新打包，这个就会花较多时间，也就是说，如果只更改少量代码的话，这个环节耗时是最多的
 
-![](https://gerigory.github.io/assets/img/【Unreal Fest 2024】Optimizing-Survival-Games-for-Mobile/22.png)
+![](https://gerigory.github.io/assets/img/【Unreal-Fest-2024】Optimizing-Survival-Games-for-Mobile/22.png)
 
 而由于代码的改变只影响libUnreal.so，所以这里的解决方案是，将这个文件放到apk外部，从而快速降低构建的耗时！
 
-![](https://gerigory.github.io/assets/img/【Unreal Fest 2024】Optimizing-Survival-Games-for-Mobile/23.png)
+![](https://gerigory.github.io/assets/img/【Unreal-Fest-2024】Optimizing-Survival-Games-for-Mobile/23.png)
 
 该功能在5.4上也已经支持了，提供了一个配置选项
 
-![](https://gerigory.github.io/assets/img/【Unreal Fest 2024】Optimizing-Survival-Games-for-Mobile/24.png)
+![](https://gerigory.github.io/assets/img/【Unreal-Fest-2024】Optimizing-Survival-Games-for-Mobile/24.png)
 
 下面来看下用USB安装的耗时问题：首先操作系统是不会告知当前USB安装的带宽的，而USB2跟USB3的带宽差距很大
 
-![](https://gerigory.github.io/assets/img/【Unreal Fest 2024】Optimizing-Survival-Games-for-Mobile/25.png)
+![](https://gerigory.github.io/assets/img/【Unreal-Fest-2024】Optimizing-Survival-Games-for-Mobile/25.png)
 
 针对这个问题，解决方案就是：
 
 1. 保证相关硬件（线、端口等）的带宽是足够的
 2. 通过一些工具对实际的带宽进行测试（上面列举了部分可用工具）
 
-![](https://gerigory.github.io/assets/img/【Unreal Fest 2024】Optimizing-Survival-Games-for-Mobile/26.png)
+![](https://gerigory.github.io/assets/img/【Unreal-Fest-2024】Optimizing-Survival-Games-for-Mobile/26.png)
 
 最后是android设备上的Memory Insights的支持，这个在5.4上已经ok了，实测这个工具不会对性能造成过重的负担。
 
-![](https://gerigory.github.io/assets/img/【Unreal Fest 2024】Optimizing-Survival-Games-for-Mobile/27.png)
+![](https://gerigory.github.io/assets/img/【Unreal-Fest-2024】Optimizing-Survival-Games-for-Mobile/27.png)
 
 这里给了具体的启用步骤，可以参考
 
-![](https://gerigory.github.io/assets/img/【Unreal Fest 2024】Optimizing-Survival-Games-for-Mobile/28.png)
+![](https://gerigory.github.io/assets/img/【Unreal-Fest-2024】Optimizing-Survival-Games-for-Mobile/28.png)
 
 android上有部分内存不是由UE分配的，而是由系统分配的，比如基于libc.so完成分配，针对这部分内存，可以在应用启动之前先将一个lib预加载进来就行，具体来说，就是在构建apk的时候传入一个参数即可。
 
 ## 参考
 
-[[1]. Optimizing Survival Games for Mobile | Unreal Fest 2024](https://www.youtube.com/watch?v=X_ir86-Cpvk)
+[[1]. Optimizing Survival Games for Mobile | Unreal-Fest-2024](https://www.youtube.com/watch?v=X_ir86-Cpvk)
