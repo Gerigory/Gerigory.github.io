@@ -2,7 +2,7 @@
 layout: post
 title: 【Siggraph 2014】Next generation post-processing in call of duty advanced warfare
 date: 2024-09-18
-img: Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/Page1.png # Add image post (optional)
+img: Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/Page1.PNG # Add image post (optional)
 fig-caption: # Add figcaption (optional)
 tags: [COD, Post-Processing, Siggraph, 2014]
 description: 本文分享的是COD在Siggraph 2014上给出的他们在后处理工作上的一些优化方案
