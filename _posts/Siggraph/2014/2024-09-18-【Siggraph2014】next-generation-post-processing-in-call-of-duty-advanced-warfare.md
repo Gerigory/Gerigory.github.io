@@ -7,7 +7,13 @@ fig-caption: # Add figcaption (optional)
 tags: [COD, Post-Processing, Siggraph, 2014]
 description: 本文分享的是COD在Siggraph 2014上给出的他们在后处理工作上的一些优化方案
 ---
-![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片1.PNG)
+![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/Page1.PNG)
+
+COD在Siggraph 2014上分享过他们在后处理方面的一些工作要点，其中的一些内容对今天的游戏开发依然有不小的帮助，这里将其中的一些要点分享出来。
+
+照例，先来对全文的关键信息做一个简短的总结：
+
+1. 
 
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片2.PNG)
 
@@ -15,13 +21,42 @@ description: 本文分享的是COD在Siggraph 2014上给出的他们在后处理
 
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片4.PNG)
 
+分享的技术小哥认为，对于写实风格的作品而言，后处理是游戏效果是否能逼近影视效果的关键。
+
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片5.PNG)
+
+后处理工作的优化思路总结下来有上述几个要点。
 
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片6.PNG)
 
+大纲如上，会从三方面进行介绍：
+
+1. 基本概念
+2. 面临问题
+3. 对应方案
+
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片7.PNG)
 
+运动模糊在快速移动的游戏中，会有非常重要的作用。
+
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片8.PNG)
+
+参考[3]：
+
+> 真实世界中，自然光在感光材料上产生光化学作用，形成潜影的过程叫做曝光。
+>
+> 在这个过程中，如果拍摄对象发生了相对相机的移动，就会导致恒定输入的持续曝光变成非恒定输入的曝光叠加，最终体现为拍摄物体的模糊，也就是常说的运动模糊
+>
+> 同时，人类肉眼的视觉暂留现象，同样也是因为感光细胞中感光色素形成的延迟形成的
+>
+> 缺少动态模糊的画面，反而会丧失运动感，使观众失去焦点并从直觉上感觉画面断断续续而不自然
+
+运动模糊是提升效果真实感的重要手段，常见的运动模糊有三类：线性、旋转以及缩放（径向）。而常见的模拟方案有如下几种[3]：
+
+1. Accumulation Buffer：将运动的物体按照运动方向做多次渲染，之后按照一定的权重累加之后，再叠加到静态背景上
+2. Velocity Buffer：基于屏幕空间每个像素的速度向量，做一个向前（按照曝光的理论，运动模糊表现为前后两部分的虚化）与向后的颜色扩散，以模拟该像素经过路径上的染色行为
+
+注意：上图中介绍的第二种Stochastic Rasterization的方案不是上面说的Velocity Buffer的方案，而是通过随机噪点的方式来模拟的方案，参考[6]
 
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片9.PNG)
 
@@ -344,3 +379,11 @@ description: 本文分享的是COD在Siggraph 2014上给出的他们在后处理
 [[1]. Next Generation Post Processing in Call of Duty: Advanced Warfare](https://www.iryoku.com/next-generation-post-processing-in-call-of-duty-advanced-warfare/)
 
 [[2]. 物体运动模糊(motion blur)](https://zhuanlan.zhihu.com/p/480274106)
+
+[[3]. 运动模糊](https://zhuanlan.zhihu.com/p/441786650)
+
+[[4]. A Reconstruction Filter for Plausible Motion Blur](https://casual-effects.com/research/McGuire2012Blur/McGuire12Blur.pdf)
+
+[[5]. A Fast and Stable Feature-Aware Motion Blur Filter](https://www.cim.mcgill.ca/~derek/files/Guertin2014MotionBlur.pdf)
+
+[[6]. Real-time Stochastic Rasterization on Conventional GPU Architectures](https://research.nvidia.com/sites/default/files/pubs/2010-06_Real-Time-Stochastic-Rasterization/McGuire10Stochastic.pdf)
