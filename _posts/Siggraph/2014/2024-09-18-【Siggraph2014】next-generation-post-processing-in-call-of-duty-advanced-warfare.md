@@ -7,7 +7,6 @@ fig-caption: # Add figcaption (optional)
 tags: [COD, Post-Processing, Siggraph, 2014]
 description: 本文分享的是COD在Siggraph 2014上给出的他们在后处理工作上的一些优化方案
 ---
-![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/Page1.PNG)
 
 COD在Siggraph 2014上分享过他们在后处理方面的一些工作要点，其中的一些内容对今天的游戏开发依然有不小的帮助，这里将其中的一些要点分享出来。
 
@@ -47,7 +46,7 @@ COD在Siggraph 2014上分享过他们在后处理方面的一些工作要点，�
 >
 > 在这个过程中，如果拍摄对象发生了相对相机的移动，就会导致恒定输入的持续曝光变成非恒定输入的曝光叠加，最终体现为拍摄物体的模糊，也就是常说的运动模糊
 >
-> 同时，人类肉眼的视觉暂留现象，同样也是因为感光细胞中感光色素形成的延迟形成的
+> 同时，人眼的视觉暂留现象，同样也是因为感光细胞中感光色素形成的延迟形成的
 >
 > 缺少动态模糊的画面，反而会丧失运动感，使观众失去焦点并从直觉上感觉画面断断续续而不自然
 
