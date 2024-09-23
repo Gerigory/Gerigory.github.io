@@ -314,11 +314,11 @@ McGuire算法的步骤给出如上图所示：
 
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片63.PNG)
 
-
+这里的代码给出了当前像素周边的各个sample的采样权重
 
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片64.PNG)
 
-这里给出了具体的实现代码
+这里给出了最终颜色的计算公式：color = foreground_color + (1 - foreground_alpha ) * background_color
 
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片65.PNG)
 
