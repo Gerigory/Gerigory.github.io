@@ -7,6 +7,7 @@ fig-caption: # Add figcaption (optional)
 tags: [COD, Post-Processing, Siggraph, 2014]
 description: 本文分享的是COD在Siggraph 2014上给出的他们在后处理工作上的一些优化方案
 ---
+![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/Page1.PNG)
 
 COD在Siggraph 2014上分享过他们在后处理方面的一些工作要点，其中的一些内容对今天的游戏开发依然有不小的帮助，这里将其中的一些要点分享出来。
 
@@ -46,7 +47,7 @@ COD在Siggraph 2014上分享过他们在后处理方面的一些工作要点，�
 >
 > 在这个过程中，如果拍摄对象发生了相对相机的移动，就会导致恒定输入的持续曝光变成非恒定输入的曝光叠加，最终体现为拍摄物体的模糊，也就是常说的运动模糊
 >
-> 同时，人眼的视觉暂留现象，同样也是因为感光细胞中感光色素形成的延迟形成的
+> 同时，人类肉眼的视觉暂留现象，同样也是因为感光细胞中感光色素形成的延迟形成的
 >
 > 缺少动态模糊的画面，反而会丧失运动感，使观众失去焦点并从直觉上感觉画面断断续续而不自然
 
@@ -292,23 +293,24 @@ McGuire算法的步骤给出如上图所示：
 
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片58.PNG)
 
-这里的解决方法，就是维持权重的稳定，将当前像素的权重从1改为4（4 = 7 - 3，总计7个采样点，有3个采样点不再产生贡献；或者也可以理解为维持总权重的稳定）
+这里的解决方法，就是维持权重的稳定，将当前像素的权重从1改为4（4 = 7 - 3，可以理解为维持总权重的稳定，有值的采样点为3，那么当前像素的权重就要相应提高到4）
 
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片59.PNG)
 
-
+同样，再往前一个像素，本身的权重为5
 
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片60.PNG)
 
-
+这里为6
 
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片61.PNG)
 
+理论上，要按照前面的权重的方法对每个采样点做加权求和，不过实际实现的时候采用了一种简单的方法，就是：
 
+1. 按照McGuire的方法来做前景跟背景数据的累加
+2. 不过在累加后对累加结果做一个梯度处理
 
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片62.PNG)
-
-
 
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片63.PNG)
 
@@ -316,7 +318,7 @@ McGuire算法的步骤给出如上图所示：
 
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片64.PNG)
 
-
+这里给出了具体的实现代码
 
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片65.PNG)
 
