@@ -7,8 +7,6 @@ fig-caption: # Add figcaption (optional)
 tags: [COD, Post-Processing, Siggraph, 2014]
 description: 本文分享的是COD在Siggraph 2014上给出的他们在后处理工作上的一些优化方案
 ---
-![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/Page1.PNG)
-
 COD在Siggraph 2014上分享过他们在后处理方面的一些工作要点，其中的一些内容对今天的游戏开发依然有不小的帮助，这里将其中的一些要点分享出来。
 
 照例，先来对全文的关键信息做一个简短的总结：
@@ -322,115 +320,144 @@ McGuire算法的步骤给出如上图所示：
 
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片65.PNG)
 
+这里将上述计算公式中的各个部分分别用图形的方式展示了出来，此外：
 
+1. 从性能考虑，这里只考虑一个模糊方向
 
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片66.PNG)
 
-
+实测发现，这个方法在背景变化低频的情况下表现是没问题的（因为相当于用可见部分的背景替代了不可见部分的背景），但是高频部分就会有问题。
 
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片67.PNG)
 
-
+主要原因是因为inner blur的背景数据是缺失的
 
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片68.PNG)
 
-
+这里的解决方法（trick）是将相邻区域的可见部分背景的权重做镜像处理，之所以这样做，是因为原来的问题是轮廓线两边的模糊程度不一致，那么我们只需要将两边的模糊程度调整为一致就行了嘛。
 
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片69.PNG)
 
-
-
-
+这里给出了具体的实现代码。
 
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片70.PNG)
 
+看看效果，这是McGuire的效果
+
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片71.PNG)
 
-
-
-
+这是调整了参与模糊的数据后的结果，总体来说模糊效果变得平滑，但是部分背景区域也存在不平滑的现象。
 
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片72.PNG)
 
-
+之后做了镜像权重处理的效果，不平滑问题得到了缓解。
 
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片73.PNG)
 
+将模糊结果跟原始图像混合后，就得到了这个效果。
+
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片74.PNG)
 
-
-
-
+这里给了一个展示视频。
 
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片75.PNG)
 
+第二项优化点，是画面质量，即通过不同的采样pattern来提升效果。
+
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片76.PNG)
 
-
-
-
+主要采取了上述四种采样pattern，这里是通过在采样的时候通过一个噪声函数调整采样offset来实现的
 
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片77.PNG)
 
+比如一个常量的噪声函数就返回一个常数值，效果如上图所示，有很明显的问题，表现为pattern比较明显
+
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片78.PNG)
 
-
+将噪声函数替换成上述实现（平方算法）后，效果就好多了
 
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片79.PNG)
 
-
+采用dither方案，效果更好了，这里对各种dither pattern做了对比，最后发现checkboard pattern最好。
 
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片80.PNG)
 
-
+如果在时域上再做一次dither，即奇偶两帧分别采用不同的pattern，效果还会进一步提升。
 
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片81.PNG)
 
-
-
-
+如果采用的是non-uniform的采样方案，会导致模糊中心区域的锐利的线条。这里给出的解决方法是将采样点（灰色点）与当前像素做一个错位（水平+垂直），相当于将一个像素的数据分散到相邻的采样计算中，从而避免了前面的问题。
 
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片82.PNG)
 
+总结一下：
+
+1. 在采样数不足的时候，通过添加噪声的方式可以有效提升画面质量
+2. 通过dither的方式加上时域复用还可以进一步提升画面品质
+
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片83.PNG)
 
-
+上述介绍的方案，相对于原始McGuire的方案而言，由于处理的case从3个降低到2个，所以性能上是有提升的，但是这里还有优化的空间。
 
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片84.PNG)
 
+这里做的一个优化是，将此前tile中存储的max depth改成min/max两个值，并基于两者的差来判断是否需要执行快速路径。
 
+这里的视频展示中，当静止的时候，基本上就是蓝色的，需要走early exit路径，而在移动的时候，基本上都是color loop（快速路径），只有少部分是复杂的红色slow path。
 
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片85.PNG)
 
+在具体的实现上，这里还有一些建议：
 
+1. 最大的速度从原来的2D计算，变成两个1D计算（这种算法不只是可以用于模糊，所有类似的计算都可以）
+2. 将速度跟depth放到一张buffer中，从而降低shader采样数
+3. 对tile采样的坐标做dither处理，从而可以有效降低tile的pattern表现
+4. 使用point sampling避免线性混合导致的bleeding问题
 
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片86.PNG)
 
-
+接下来看看DOF，其中所需要的计算逻辑很多在前面运动模糊中都已经覆盖了。
 
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片87.PNG)
 
+虽然两者在具体的实现原理上有极大的相似之处，但实际情况还是有些区别，比如运动模糊由于是运动物体，很多问题会被掩盖，放到DOF下，这些问题就容易暴露。
 
+在实际执行层面，运动模糊其实是一种单层的方法，这里针对DOF就需要一个双层方法。
 
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片88.PNG)
 
-
+这里介绍了工作的复杂情况
 
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片89.PNG)
 
+最开始先尝试了六边形或者八边形的模糊形状，效果很好，不过不能很好的匹配前面的scatter-as-you-gather的实现方案（为啥？因为不知道要将当前像素的数据贡献给哪些像素）。
 
+最终采用的是圆形的Bokeh方案，在半分辨率下每个像素采样49次。
 
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片90.PNG)
 
+先对DOF的问题做一个总结，总的来说问题跟运动模糊是类似的，不同的是程度更为严重：
 
+1. Scatter-as-you-gather应用的bleeding问题，通过tile划分加max coc来解决
+2. 采样质量不足问题
+3. 性能问题，需要49个颜色采样以及另外49个数据采样
 
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片91.PNG)
 
+这里给出DOF的计算步骤，参考最右边的图，其中橙色方块表示当前像素，蓝色、白色的圈表示参与贡献的sample（每个白色sample都有一个较大的CoC半径，蓝色表示的是背景，此处未做blur）：
 
-
-
+1. 判断某个sample是否会覆盖当前像素（即以该sample为中心，以CoC半径为半径看是否相交，这里用于判断sample是否产生贡献）
+2. 判断sample相对于当前像素而言，是否是前景数据
+3. 将overlapping以及前景像素放在一起，按照从后到前的顺序进行排序（这一步计算比较费）
+4. 对每个sample赋予一个alpha混合权重，公式如上（CoC半径是跟sample而不是跟当前pixel走的。。）
+5. 基于alpha完成混合
 
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片92.PNG)
+
+这里对方法做了一个简化：
+
+1. 将samples分割成前景跟背景两层（图中用颜色标出，蓝色是背景，红色是前景）
+2. 对每一层的sample分别做additive的alpha blending
 
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片93.PNG)
 
