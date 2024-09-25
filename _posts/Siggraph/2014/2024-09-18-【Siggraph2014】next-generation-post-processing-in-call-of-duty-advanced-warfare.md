@@ -456,72 +456,103 @@ McGuire算法的步骤给出如上图所示：
 
 这里对方法做了一个简化：
 
-1. 将samples分割成前景跟背景两层（图中用颜色标出，蓝色是背景，红色是前景）
+1. 将samples分割成前景跟背景两层（图中用颜色标出，蓝色是背景，红色是前景），不过虽然分为两层，但是距离上是平滑过去的，而非二分
+   1. 从性能考虑，这个划分是基于tile上的最小最大depth来执行的
 2. 对每一层的sample分别做additive的alpha blending
+3. 对于前景，计算其透明度（即有多少比例的光线从背后透过来）
+4. 基于上述alpha，对前景与背景数据做混合
 
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片93.PNG)
 
-
-
-
+这里做一个可视化的展示，先来看看背景数据
 
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片94.PNG)
 
+然后这是前景数据
+
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片95.PNG)
 
-
+这是两者混合的alpha数据
 
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片96.PNG)
 
-
+基于上述三个数据混合后的结果如上图所示。
 
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片97.PNG)
 
-
-
-
+sample覆盖范围采用的依然是前面运动模糊的tiling策略，同样需要做3x3的tile过滤，取得最大的CoC以及到相机最近的深度数据（用来做前景跟背景的区分）。
 
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片98.PNG)
 
+在执行main filter之前，这里增加了一个presort pass（这里的presort，其实是标注前景跟背景），这个pass会计算出每个像素的CoC、前景跟背景的SampleAlpha数据，存入到一个R11G11B10的PreSort Buffer中。
 
+这里是通过与前面的closest depth来比对，判断是前景还是背景的。
+
+这个pass的作用是避免main filter pass中的ALU & VGPR计算压力（为啥可以避免？是因为就只需要做一遍，之后被多次使用?）
 
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片99.PNG)
 
+这里的累加结果会写入到两个float4中，分别存储前景跟背景的数据，其中RGB存储颜色，A存储权重。
+
+前景跟背景混合的alpha来自于前景的a通道，不过，scatter-as-you-gather方法还需要做归一化（为什么scatter方法不用？），公式如上图所示。
+
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片100.PNG)
 
+DOF不同于运动模糊，不需要混合被前景遮挡的背景数据，比如上图中给的右边小图的例子，只需要模糊前景的角色。
 
+如果不做处理，就会在边缘混合进来背景的数据，这是不希望看到的。
 
-
+这里的做法是对alpha做一个remapping，不影响中间区域的alpha数值，保持前景混合的结果（使用背景数据，不过背景本身被前景遮挡，其实也就是前景了），而调整边缘位置的alpha数值，使之更多的使用前景数据，从而避免混合进来更多的背景数据。
 
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片101.PNG)
 
-
+这个是结果
 
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片102.PNG)
 
+alpha的remapping也会带来一些不良影响，主要的问题就是这个操作会导致模糊后物体变得肥胖或者纤细，看起来不自然。
+
+从上面的分析看到，这里可以针对不同的情况采用不同的remapping策略，从而得到更为自然的模糊效果。
+
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片103.PNG)
 
-
-
-
+这里给了个视频，展示了最终的效果，前景（武器）的边缘锐利程度得到了很好的保留。
 
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片104.PNG)
 
+这里来看下采样点不足的问题，主要通过两个方法解决（展示了两种优化策略的收益）：
+
+1. 在滤波之前，先做一次预滤波
+2. 滤波之后，叠加一个median（媒介？），进一步降低噪声
+
+下面看下这两种策略的具体实施细节。
+
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片105.PNG)
 
+一个需要大量采样点的滤波，可以转化为多次少量采样点的滤波（乘法原则）。
 
+不过这种方法不适合于Scatter-as-you-gather方法，这是因为这种方法的输入参数（Depth & CoC）在完成第一次滤波后，数据的物理意义就丢失了。
+
+要想保留其物理意义，就需要在滤波的时候做特殊处理，比如沿着物体的表面进行滤波（depth aware）。
+
+这里采用了一个9 tap的预滤波方法，会根据中心的CoC调整滤波半径，同时权重会考虑深度的影响，滤波的宽度正好可以填充sample之间的孔隙。
 
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片106.PNG)
 
+这里对前面的简要概括做了一下细节的补充：
 
+1. 这里会把数据分为两层
+2. 为了提升效率，部分采样点在满足下述条件的时候会被认为是可接受的：
+   1. 采样点跟center tap的前、背景属性是相同的（同为前景或者同为背景）
+      1. 也就是说，允许层内混合，不支持跨层混合
 
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片107.PNG)
 
-
+这里的预滤波采用的是Karis average算子，用稳定性换清晰度。左右两边是传统方案跟预滤波方案，可以发现预滤波方案可以有效滤除高光的闪烁。
 
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片108.PNG)
 
-
+预滤波之后，就进入了main filter pass。
 
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片109.PNG)
 
