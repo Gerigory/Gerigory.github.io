@@ -523,7 +523,7 @@ alpha的remapping也会带来一些不良影响，主要的问题就是这个操
 这里来看下采样点不足的问题，主要通过两个方法解决（展示了两种优化策略的收益）：
 
 1. 在滤波之前，先做一次预滤波
-2. 滤波之后，叠加一个median（媒介？），进一步降低噪声
+2. 滤波之后，叠加一个median（中值滤波），进一步降低噪声
 
 下面看下这两种策略的具体实施细节。
 
@@ -556,27 +556,36 @@ alpha的remapping也会带来一些不良影响，主要的问题就是这个操
 
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片109.PNG)
 
-
+即使是HDR，依然存在采样率不足、噪声的迹象（？），这里的解决方法是类似Sousa 2013的做法，再做一次后滤波，不过这里的滤波算子用的是中值滤波，而非最大值的滤波，原因是中值效率更高，且不会影响高光效果。
 
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片110.PNG)
 
-
+采用双线性滤波会导致bleeding问题
 
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片111.PNG)
 
+bleeding问题可以通过CoC premultiply策略解决（具体是？），不过这个解决方案对于极端情况表现比较好，中间区域则会有失败的可能（尤其是HDR）。
 
+需要RGBA16格式的buffer，会有较多的显存消耗，且跟只考虑color的优化计算逻辑不兼容
 
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片112.PNG)
 
+预滤波跟滤波（main）pass的详细设置如上所示：
 
+1. 预滤波时，颜色跟深度的采样策略不相同
+2. 滤波pass
+   1. 正常情况，颜色buffer跟presort buffer都是point sampling，并添加随机offset
+   2. 对于fast tile而言，即只有颜色，则只采用双线性采样加随机offset
 
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片113.PNG)
 
-
+也尝试过一个变体版本，不过计算消耗会高一些，且前景的alpha数值相比期望数值会偏低。
 
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片114.PNG)
 
+这里的优化（性能）策略类似于运动模糊的优化策略，分三层，每层采用不同的计算分支。
 
+此外，还有一个Ring Optimization策略，根据CoC的数值来调整采样数（参考Valient 2013）。
 
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片115.PNG)
 
