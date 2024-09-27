@@ -589,77 +589,89 @@ bleeding问题可以通过CoC premultiply策略解决（具体是？），不过
 
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片115.PNG)
 
+将下采样、滤波以及presort放到同一个pass中完成：
 
+1. 下采样的时候，选择最远的sample来降低半分辨率导致的光晕（haloing）问题
+2. prefilter跟presort基于同一个depth buffer完成
+
+Main pass输出的颜色跟alpha也是半分辨率的。
+
+这俩（颜色跟alpha）都会通过中值滤波处理一轮。
 
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片116.PNG)
 
-
+这里对总体的滤波逻辑做了更细致的说明。
 
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片117.PNG)
 
-
+最后一个部分跟后处理关系不大，会介绍一下阴影采样的方法。
 
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片118.PNG)
 
-
+60 fps的帧率要求，导致阴影采样数就不能过多，这里尝试过对每个像素按照旋转泊松圆盘做随机偏移的方法，在8个采样数的情况下，表现也不是太好，同时在移动的时候质量还不稳定。
 
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片119.PNG)
 
-
+最常用的随机公式是将数值与某个magic number做多次点乘。
 
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片120.PNG)
 
+对随机噪声生成器做了多种尝试，发现了一种介于dithered跟random之间的方法，这里称之为Interleaved Gradient Noise。
 
+基于这个方法来对采样点做旋转，得到的结果相当不错：
+
+1. 能够像随机噪声一样，数值分布域较广
+2. 结果在时域上是稳定的，兼得了dithered的优点
 
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片121.PNG)
 
-
-
-
+噪声函数会产出interleaved gradients，也就意味着匀速移动的物件，其阴影采样的采样点是平滑旋转的（？），而如果要想让这个方法适用于静态图片，这里还需要在水平方向上做一个偏移。
 
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片122.PNG)
 
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片123.PNG)
 
-
-
-
+这里展示了该方法跟随机噪声方法的区别，质量明显更胜一筹。
 
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片124.PNG)
 
-
+因为这个方法是空间连贯的，因此适合通过模糊来做平滑。
 
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片125.PNG)
 
+采样点是按照spiral（螺旋）分布的，说是比泊松圆盘的分布方法更合适。
 
+螺旋采样可以确保在旋转的时候，样本不会重叠，上图给的数据，绘制出来大致如下图所示：
+
+![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/Ref1.png)
 
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片126.PNG)
 
-
+将前面的采样点做一个旋转
 
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片127.PNG)
 
-
+三套旋转样本叠加
 
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片128.PNG)
 
-
+四套
 
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片129.PNG)
 
-
+32套
 
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片130.PNG)
 
-
+把这些综合到一起，就得到了一套能够随着时间平滑旋转的样本，如果帧率够高的话，就能在一个位置整合尽可能多的样本，从而得到平滑的阴影效果。
 
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片131.PNG)
 
-
+这个方法不只是可以用于阴影，还可以用于任何需要较多采样来提升质量的技术上，比如SSAO。
 
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片132.PNG)
 
-
+这里给下XBOX ONE主机上，前面各个计算的时间消耗（如果在手游上也是60fps为目标的话，那这个数据就可以作为参考了）。
 
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片133.PNG)
 
@@ -675,7 +687,7 @@ bleeding问题可以通过CoC premultiply策略解决（具体是？），不过
 
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片136.PNG)
 
-
+将次表面散射的内容放到了bonus slides中。
 
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片137.PNG)
 
