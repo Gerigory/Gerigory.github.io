@@ -691,55 +691,89 @@ Main pass输出的颜色跟alpha也是半分辨率的。
 
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片137.PNG)
 
+采用的次表面散射方案是Jimenez 2013中的Separable次表面散射方法：
 
+1. 通过一个双pass的屏幕空间模糊实现（水平+垂直方向）
+2. 之后通过噪声来掩盖采样数不足的问题（前面的随机旋转策略？）
+3. 滤波的形状是两个高斯之和：
+   1. 近景散射R1
+   2. 远景散射R2
+   3. 混合因子W
 
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片138.PNG)
 
+具体而言，在Mikklesen 2010的皮肤渲染方法（伪分离交叉双边线性滤波）基础上做了一系列改进：
 
+1. 使用了importance sampling方案：9采样点，不过大部分情况下7个就够了
+2. 改进后的版本不再需要通过hack的方法来计算depth差异（因为基础版本还不明白，这里的细节就先不展开了）
 
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片139.PNG)
 
-
+再来看看Bloom的实现
 
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片140.PNG)
 
+经典实现分为如下几步：
 
+1. 通过阈值过滤出高光部分
+2. 将高光部分做下采样，得到mipmap pyramid
+3. 将每个mipmap都上采样到原始分辨率，这个过程会自动完成模糊
+4. 将各个上采样后的mipmap叠加到原始图片上
+5. 高斯模糊？
 
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片141.PNG)
 
+这里的实现是在经典实现上做了一些优化：
 
+1. 期望通过一种非侵入的方式（原生）来提升wider dynamic range（HDR）的感受
+2. 这里的输入是未经过阈值滤波的输入
+   1. 思路参考 Ward 1997
+   2. 颜色（亮度）范围是PBR的，非常高
+   3. 这样有助于实现更为自然的bloom效果，模拟人眼感受
+      1. 人眼感知到的散射，比如SSS，其实是未做过阈值滤波的
+3. 期望效果是时域稳定的
 
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片142.PNG)
 
+时域之所以不稳定，主要有如下几个因素：
 
+1. 滤波，包括下采样跟上采样，都有可能导致时域的不稳定
+2. 萤火现象，部分超亮的次像素（尺度），会导致前后两帧的计算结果存在差异，从而导致不稳定
 
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片143.PNG)
 
+解决方案给出如上（分成四个pass？每个pass都需要经过下采样跟上采样，同时不同pass，会在不同的阶段做滤波处理），总的来说就是参考Mittring 2012的方案，对下采样跟上采样结果都做滤波处理：
 
+1. 下采样滤波可以滤除锯齿效果
+2. 上采样滤波则可以提升图片质量，得到更平滑的结果
+
+在实现的时候，模糊跟下采样（上采样组合）可以在一个pass中完成。
 
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片144.PNG)
 
-
+滤波方案这里也做了比对，双线性滤波质量较差，Bicubic表现也不太好，高斯是最好的
 
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片145.PNG)
 
-
+双线性单fetch会有很明显的瑕疵与稳定性问题
 
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片146.PNG)
 
-
+4fetch可以缓解问题，但是问题还依然存在
 
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片147.PNG)
 
-
+这里给了一个效果展示
 
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片148.PNG)
 
+这里用的滤波kernel是一个人为设计的36个像素的下采样策略（通过13次双线性fetch），之后按照图示的颜色做加权平均。
 
+从效果上来看，可以消除双线性滤波的瑕疵。
 
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片149.PNG)
 
-
+各个采样点正好位于多个像素的交界位置，使得可以通过硬件双线性混合来得到多个像素的混合数据。
 
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片150.PNG)
 
@@ -755,59 +789,80 @@ Main pass输出的颜色跟alpha也是半分辨率的。
 
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片153.PNG)
 
-
+4个0.5的权重，4套0.125的权重，由于采样点有重复，因此总计只需要13次采样。
 
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片154.PNG)
 
-
+这里给出了这种方案的结果
 
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片155.PNG)
 
-
+上采样的时候，也有一些技巧：尽量避免跨级上采样，而是通过逐级上采样的方式来得到高分辨率的结果，之所以这种方式可以得到更好的结果，是因为这种采样方式等价于biquadratic b-spline（双二次B样条）滤波。
 
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片156.PNG)
 
-
+在做上采样的时候，还可以顺带完成跟之前mip的混合，从而节省一些计算的消耗。
 
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片157.PNG)
 
-
+上采样采用的是tent filter（3x3），并根据需要调整filter的滤波半径，这个filter在Kraus 2007中有说明，经过多次卷积后，将可以较好的逼近高斯滤波，不过比高斯滤波消耗低。
 
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片158.PNG)
 
-
+这是最后的效果
 
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片159.PNG)
 
-
+前面说到的时域稳定性问题中，上下采样导致的问题就解决了，接下来看看萤火表现问题。
 
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片160.PNG)
 
+萤火问题的原因是，HDR下由于下采样会导致高亮像素的闪烁。
 
+Karis 2013中给出了一种优化方式，这里从mip0到mip1下采样的时候，也用了同样的策略
 
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片161.PNG)
 
-
+这里是效果。
 
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片162.PNG)
 
+在实施的过程中发现：
 
+1. 在平均计算之前，采用非线性的强度映射，会导致闪烁问题
+   1. 在小尺寸物件按照其本身尺寸的step size对应的速度移动的时候，容易出现
+2. 虽然次像素运动（multi/supersampling）虽然能够解决这个问题，但是这种方法不是哪个地方都可以使用的
 
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片163.PNG)
 
+同时发现，在每个$h_{box}^{4x4}$上应用Karis的平均值算法之后，可以缓解这个问题。
 
+表现上来看，通过这种方式可以在移除小物件的萤火效果的前提下，同时恢复其线性移动效果
 
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片164.PNG)
 
+针对萤火问题，最终的解决方案有两种：
 
+1. 全量应用：对前面下采样的每个fetch（总计13）中都应用Karis的平均算法
+2. 部分应用：以4个sample的block为单位应用平均算法。这是本文最后采用的方案
+
+不论是哪种方法，这里的平均算法都只应用在从mip0到mip1的下采样的过程中
 
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片165.PNG)
 
-
-
-
+这里对两种方案的效果做了对比，看得出来，虽然都还在闪烁，但是本文的方法闪烁的频率相对低频。
 
 ![](https://gerigory.github.io/assets/img/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片166.PNG)
+
+这里对方案做一个总结：
+
+1. 通过小尺寸的2D kernel完成上下采样滤波
+   1. 下采样使用13 tap的滤波方案
+      1. 从mip 0到mip 1的下采样的时候，采用Karis的平均方案（部分）来缓解萤火问题
+   2. 上采样使用9 tap的tent filter
+      1. 逐级上采样
+      2. 上采样的过程中，同时完成与此前已有mip数据的混合
+2. 最终的mips数目为6，格式为R11G11B10
 
 
 
