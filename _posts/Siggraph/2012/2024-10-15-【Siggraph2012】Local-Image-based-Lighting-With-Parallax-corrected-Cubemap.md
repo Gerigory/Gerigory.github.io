@@ -107,13 +107,34 @@ IBL方案主要有两个应用场景：
 
 ![](https://gerigory.github.io/assets/img/Local-Image-based-Lighting-With-Parallax-corrected-Cubemap/幻灯片14.PNG)
 
+这里给出了简化方案的效果，左侧是没做修正的，右侧是修正完成的
+
 ![](https://gerigory.github.io/assets/img/Local-Image-based-Lighting-With-Parallax-corrected-Cubemap/幻灯片15.PNG)
+
+前面说到了如果需要美术同学手动调校每个物件上的系数K，效率会比较低，这里的解决方案是将局部cubemap的采样处理独立出来，而非集成到物体本身的绘制shader中，而采用这种方式，就需要一个新的视差校正方案（因为在这个地方，就不知道像素的位置？）
 
 ![](https://gerigory.github.io/assets/img/Local-Image-based-Lighting-With-Parallax-corrected-Cubemap/幻灯片16.PNG)
 
 ![](https://gerigory.github.io/assets/img/Local-Image-based-Lighting-With-Parallax-corrected-Cubemap/幻灯片17.PNG)
 
+不用反射点的坐标，这里添加了一个反射平面，基于反射平面，可以拿到反射向量，同样的，该向量会与box volume相交，之后拿到该点在cubemap上的数据即可。
+
 ![](https://gerigory.github.io/assets/img/Local-Image-based-Lighting-With-Parallax-corrected-Cubemap/幻灯片18.PNG)
+
+大概解释一下伪代码的实现逻辑：
+
+1. ReflCamera指的是相机相对于反射平面的Virtual camera的位置
+2. RayWS指的是从ReflCamera出发的射线，RayLS则是转换到unit box space的方向
+3. Unitary-ReflCameraLS指的是ReflCamera到unit box的边界的向量，也可以理解为在三个方向上还有多少的延展空间，这个向量除以RayLS，可以理解为RayLS方向上走多远的距离能分别跟三个（轴）平面相交
+4. -Unitary-ReflCameraLS同理，则是另外三个负方向的轴平面的步进距离
+5. 基于这两个相交向量（三维），我们取最大值（一正一负，取一正；两正则取远一点的平面）作为我们需要的相交点的步进距离
+6. 基于上述步进距离，我们就可以求得cubemap上的交点在cubemap上的坐标
+
+
+针对这个实现，目前有两点疑问：
+
+1. 这里需要针对单一的反射平面，如果我们要反射的物体本身不是平面，该怎么办
+2. 针对单一反射平面，我们要怎么实现逐cubemap texel的计算，是需要绘制一个cube，之后在PS中执行上述代码吗？
 
 ![](https://gerigory.github.io/assets/img/Local-Image-based-Lighting-With-Parallax-corrected-Cubemap/幻灯片19.PNG)
 
