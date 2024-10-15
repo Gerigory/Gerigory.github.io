@@ -138,9 +138,17 @@ IBL方案主要有两个应用场景：
 
 ![](https://gerigory.github.io/assets/img/Local-Image-based-Lighting-With-Parallax-corrected-Cubemap/幻灯片19.PNG)
 
+这里给了一个顶视图效果，一条走廊由三个cubemap覆盖，在重叠区域还设置了对应cubemap的混合权重
+
 ![](https://gerigory.github.io/assets/img/Local-Image-based-Lighting-With-Parallax-corrected-Cubemap/幻灯片20.PNG)
 
+这里给了个视频展示了对应的效果
+
 ![](https://gerigory.github.io/assets/img/Local-Image-based-Lighting-With-Parallax-corrected-Cubemap/幻灯片21.PNG)
+
+对于光滑表面而言，由于法线贴图的存在，我们的反射射线有可能会采样到反射平面以下的颜色数据（反射结果），也就是说，如果不做特殊处理的话，沿着此前的公式，我们的反射相机的命中点就会出错，不能正确反映反射结果。
+
+对于这个问题，我们只需要确保反射相机也处于unit box之中即可，即unit box需要将反射相机也包裹进去（PPT中有一个较为明白的效果对比）
 
 ![](https://gerigory.github.io/assets/img/Local-Image-based-Lighting-With-Parallax-corrected-Cubemap/幻灯片22.PNG)
 
