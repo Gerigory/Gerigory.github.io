@@ -15,19 +15,17 @@ description: 本文分享的是idTech在Siggraph 2016分享的一些渲染相关
 
 ![](https://gerigory.github.io/assets/img/Siggraph-2016-the-devil-is-in-the-details/幻灯片2.PNG)
 
-In the latest id Tech iteration, there was a big amount of updates/changes. But, for today, our focus is Rendering of course. 
+本文的重点是渲染，且着重关注少数几个关键特性。
 
-For sake of time, we will focus on couple interesting topics, albeit there are many areas that were updated.
+上图给出了id software的工作目标，包括帧率、分辨率、效果、美术同学工作效率等。
 
-Our main goal, was from the start 60hz at 1080p across all platforms, all this while aiming at a high quality visual bar.
+因为工期紧张，因此总体的工作原则是KISS（keep it simple stupid），即采用尽可能简洁的工作策略。
 
-For this new iteration and given our relatively short development time, we had to pick our fights careful, has there was a substantial catchup todo, we tried as much as possible mitigate potential time consuming work – tl;dr keep it simple.
-
-One thing I’m particularly happy, is that we have a fairly minimal amount of shaders due to careful design. About 100 unique shaders. Could actually be less if some tidy up.
-
-Other very important goal was where could we help art doing their job, how to save their precious time and where could we speedup their workflow;
+这里需要提到的一点是，由于提前做了精心设计，因此最终版本中只包含100个左右的unique shader，大约350个PSO。
 
 ![](https://gerigory.github.io/assets/img/Siggraph-2016-the-devil-is-in-the-details/幻灯片3.PNG)
+
+
 
 At a high level a frame in DOOM looks something as this
 
