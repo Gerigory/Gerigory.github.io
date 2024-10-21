@@ -21,69 +21,97 @@ description: 本文分享的是idTech在Siggraph 2016分享的一些渲染相关
 
 因为工期紧张，因此总体的工作原则是KISS（keep it simple stupid），即采用尽可能简洁的工作策略。
 
-这里需要提到的一点是，由于提前做了精心设计，因此最终版本中只包含100个左右的unique shader，大约350个PSO。
+这里需要提到的一点是，由于提前做了精心设计，因此最终版本中只包含100个左右的unique shader，大约350个PSO（太省了）。
 
 ![](https://gerigory.github.io/assets/img/Siggraph-2016-the-devil-is-in-the-details/幻灯片3.PNG)
 
+在60 fps的帧率下，各个pass的耗时统计：
 
+- shadow部分启用了cache逻辑，耗时约3ms
+- 耗时最高的为不透明部分的绘制，耗时约6.5ms
+- 其他耗时则如上图所示，总体来说，耗时比较节省
 
-At a high level a frame in DOOM looks something as this
+这里有几点需要关注：
 
-We do a Hybrid approach, by using opaque passes and deferred for a nice quality / performance ratio.
-
-Using Forward also has some auto-magic benefits for quality ( which we will talk soon ) and things like MSAA.
-
-As you might have guessed, being Forward forces us to prepare all lighting and shading data ahead of time as much as possible.
-. That means things like the data structure used to index into things like Light sources, are prepared ahead of time.
-. Shadows are other obvious case. We do quite some work keeping costs down here, resorting to things like caching and smart composite to mitigate costs when update required.
-
-For the deferred stage, we output the minimal data required for doing things like reflections, specular occlusion and so on.
-
-I mention approximated times has times are always variable. For example posts can grow when DOF is enabled or some game related Post Process – albeit posts run in Async on consoles and Vulkan.
-Or the usual Particles, where we can get cases with some heavy overdraw.
+1. 采用的既不是前向渲染，也不是延迟渲染管线，而是二者的混合，这种做法对于他们的项目来说，更容易达到性能与质量的平衡，所以，对于特定项目而言，定制才是最佳的路，虽然成本会更高
+2. 前向部分：
+   1. 使用前向管线的好处是，可以收获一些前向管线独有的优势，比如可以开启MSAA，还有一些其他质量上的收益（接下来会说到）
+   2. 前向管线也带来了一些约束，比如光照跟shading相关的数据都需要尽可能的提前准备好（目的是？），比如
+      1. 光源相关的数据都需要提前准备好，方便在计算的时候进行索引
+      2. 阴影也需要做一些处理（这个跟前向有什么关系？），比如shadow cache以及一些smart composite策略
+3. 延迟部分：只输出那些必要的特性（反射、高光遮蔽等）所需要的数据
+4. 不过上面的数据展示也只是一个示例，实际情况中后处理的消耗会随着情景的不同而有所不同
+   1. 比如开启DOF的话，消耗会高一些等（在主机跟vulkan下，后处理是放到Async Compute中执行的）
+   2. 比如部分情况下，特效会带来较高的overdraw，这个也会导致性能数据的波动
 
 ![](https://gerigory.github.io/assets/img/Siggraph-2016-the-devil-is-in-the-details/幻灯片4.PNG)
 
-A derivation from
-“Clustered Deferred and Forward Shading”, Ola Olson et Al.
-“Practical Clustered Shading”, Emil Person
-Just works ™
-Works implicitly on transparent surfaces
-Independent from depth buffer
-No false positives along depth
+这里来介绍一下光照与shading的计算逻辑，总体思路是对下述两个talk中的方案的继承，实际上是clustered rendering策略，即基于三维的空间划分，得到的cluster中计算都会被哪些光源影响，从而降低光照计算的复杂度，具体参考[milo的分享](http://miloyip.com/2014/many-lights/)：
+
+- “Clustered Deferred and Forward Shading”, Ola Olson et Al.
+- “Practical Clustered Shading”, Emil Person
+
+采用这种管线有如下的一些优势：
+
+1. 透明物件的绘制不用与不透明物件分割开来
+2. Depth相关的两点没看明白
 
 ![](https://gerigory.github.io/assets/img/Siggraph-2016-the-devil-is-in-the-details/幻灯片5.PNG)
 
+这里介绍了clustered rendering中cluster的计算逻辑：
+
+1. 在CPU上基于Frustum的覆盖范围进行划分（没有考虑depth的range？），出于效率考虑，用了多线程计算，每个线程负责一个depth slice
+2. 采用的是person的方法，在对数划分的基础上对near/far plane做了处理，基于处理后的near/far plane做对数划分
+   1. 采用对数划分，是因为近处精度要求高，所以需要分配更多预算
+3. 之后对cluster中的item做归类处理：
+   1. item数据包含环境光probe、贴花以及光源（这三者都可以，也都应该做延迟计算）
+   2. 归类的方式是将item的OBB（或frustum）做光栅化，之后与与当前cluster屏幕空间的xy以及depth bounds做比较
+
 ![](https://gerigory.github.io/assets/img/Siggraph-2016-the-devil-is-in-the-details/幻灯片6.PNG)
 
-Important to mention: If volume intersecting view frustum, we perform frustum clipping, which increases number of planes
+前面介绍的是常规做法，这里给出优化做法，即将OBB/Frustum光栅化到屏幕空间来判断是否相交的做法改成Plane与AABB的相交（包含）测试，基于这个做法，性能会有较大提升：
+
+1. 一个Cluster在Clip Space中就是一个AABB，而OBB跟Frustum可以分别转化为6个或者5个Plane
+2. 由于对于每个Plane的计算过程是相同的，因此可以使用SIMD来做运算的加速，从而提升计算性能
 
 ![](https://gerigory.github.io/assets/img/Siggraph-2016-the-devil-is-in-the-details/幻灯片7.PNG)
 
+最终得到的cluster数据结构包含两个list：
+
+1. Offset list：这是一个3D数组，尺寸为[Grid Dim X，Grid Dim Y，Grid Dim Z]，每个数组元素的长度为64bits
+   1. 这个数组中存储的是每个cluster对应的数据在Item list中的起始位置
+2. Item list：这是一个一维数组，存储的是所有item的信息，item类型为光源、环境光probe以及贴花，其中
+   1. 每个item包含24个bits，其中（感觉这里有优化空间，可以留出两位来表示item类型，剩余位数用于表示索引，不是更优吗？）
+      1. 前面12位分配给光源，表示的是当前item对应的是哪一个光源（索引）
+      2. 中间12位分配给贴花，表示的是当前item对应的是哪一个贴花（索引）
+      3. 后面8位分配给环境光probe，表示的是当前item对应的是哪一个环境光probe（索引）
+   2. 每个cluster最多包含256个item
+   3. 最差情况下，每个cluster都有这么多数据，因此有上图中的最差情况下的该list的尺寸
+3. Grid分辨率目前采用的是16x8x24，还是比较低的
+   1. GCN部分没看明白？
+
 ![](https://gerigory.github.io/assets/img/Siggraph-2016-the-devil-is-in-the-details/幻灯片8.PNG)
 
-Can be better / improved – perf was quite ok already, ship it
+这里给出cluster debug view，其中红色表示有10个以上的volume overlapping，而绿色表示5个以下的volume overlapping，橙色则是二者之间的，文中介绍，虽然这里还有优化的空间，但是性能表现已经够用了，所以就不改了，直接发吧。。。
 
 ![](https://gerigory.github.io/assets/img/Siggraph-2016-the-devil-is-in-the-details/幻灯片9.PNG)
 
-Mega-Texture was still used in this project, some relevant updates
-Albedo, Specular, Smoothness, Normals, HDR Lightmap
-Allows dynamic lighting
-Fairly packed, BC3 page files ( an atlas )
-HW sRGB support
-Improved mipmap generation 
-Baked Toksvig into smoothness for specular anti-aliasing
-Feedback buffer UAV output directly to final resolution
-Async compute transcoding
-Old CPU transcoding ran slow on new consoles
-Cost is now mostly irrelevant
-Old design troubles still present
-Overall, low texture quality
-Reactive texture streaming = texture popping
-Opaque geometry only
-Page borders artefacts, low quality filtering, etc
-Extra costs due to dependent lookups 
-HDPhoto / BC compression artefacts
+管线部分介绍完了，下面来看看如何给场景增加各种各样的细节：
+
+1. 依然开启了VT特性（Mega-Texture），不过相对于此前的引擎版本，做了一些升级
+2. VT覆盖了多种类型的数据贴图，从Albedo到Lightmap等：
+   1. VT Page做了BC3压缩
+   2. 开启了硬件sRGB支持（包含了一系列的特性，比如将线性颜色写入framebuffer时，硬件会自动转成sRGB格式，支持对sRGB贴图做插值、mipmapping等计算，最关键的是基本无性能影响，参考[Wiki](https://en.wikipedia.org/wiki/SRGB#:~:text=sRGB%20is%20a%20standard%20RGB,and%20the%20World%20Wide%20Web.)）
+   3. 优化了mipmap的生成算法：参考了Toksvig的[做法](https://www.jianshu.com/p/efabea28ed1a)，将用于消除高光锯齿的数值烘焙到smoothness部分，从而以较低的消耗来移除远景部分的高光锯齿问题
+3. VT request的feedback buffer直接输出到final resolution（？）
+4. 通过Async Compute完成转码（什么情况下需要？），在数据不相关的时候，这个步骤消耗较高
+5. VT本身的缺陷还依然存在，比如
+   1. 基于反馈的texture streaming就会带来贴图的popping闪现问题
+   2. 只能应用于不透明物件
+   3. Page边缘的瑕疵
+   4. 滤波问题
+   5. dependent lookup带来的额外消耗
+   6. 高清贴图跟BC压缩贴图混用带来的异常等
 
 ![](https://gerigory.github.io/assets/img/Siggraph-2016-the-devil-is-in-the-details/幻灯片10.PNG)
 
@@ -298,6 +326,5 @@ Main Lighting Buffer: R11G11B10F
 
 ## 参考
 
-[[1]. Siggraph 2012 talk : Local Image-based Lighting With Parallax-corrected Cubemap](https://seblagarde.wordpress.com/2012/11/28/siggraph-2012-talk/)
+[[1]. Siggraph 2016 talk : The devil is in the details](https://advances.realtimerendering.com/s2016/Siggraph2016_idTech6.pdf)
 
-[[2]. Game Connection 2012 talk : Local Image-based Lighting With Parallax-corrected Cubemap](https://seblagarde.wordpress.com/wp-content/uploads/2012/08/parallax_corrected_cubemap-gameconnection2012.pptx)
