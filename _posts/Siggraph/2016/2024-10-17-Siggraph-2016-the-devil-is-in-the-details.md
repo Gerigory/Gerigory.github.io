@@ -115,42 +115,69 @@ description: 本文分享的是idTech在Siggraph 2016分享的一些渲染相关
 
 ![](https://gerigory.github.io/assets/img/Siggraph-2016-the-devil-is-in-the-details/幻灯片10.PNG)
 
-Who here ever implemented deferred/geometry decals ? Raise your hands…
+贴花常见的策略如mesh decal或者延迟decal，在trouble case的处理上会比较耗时间（没有具体说明是哪些trouble case？），这里给的策略是将贴花嵌入到正常物件绘制的光栅化逻辑中。
 
-How fun was it dealing with all the trouble cases ?
+上下文没有给出具体的实现说明，根据已有的信息推断实现过程，可能的策略为：
 
-*Have to compute your own derivatives, but just works across geometry edges and depth discontinuities
+1. 通过cluster统计出各个cell关联的贴花列表
+2. 在物件光栅化的时候，仿造lighting计算，对贴花数据做投影采样
+3. 为了避免单个物件在遍历多个贴花时的消耗，这里将贴花放到VT（8k x 8k分辨率，BC7压缩模式）中，从而可以在一个pass中完成多个贴花的遍历
+
+这种策略可以保障在depth不连贯的区域以及跨多个物件的情况下，都能有正确的表现，除此之外，还有一些前面的方法所不具备的优点：
+
+1. 可以很容易实现贴花法线跟依附物法线的混合
+2. 支持mipmapping与各向异性效果
+3. 支持半透贴花
+4. 支持多层贴花的自定义排序
+5. 不会因为贴花带来drawcall的新增
 
 ![](https://gerigory.github.io/assets/img/Siggraph-2016-the-devil-is-in-the-details/幻灯片11.PNG)
 
-Some math recap
+贴花实现的一些细节介绍：
 
-Relevant to mention: we don’t concatenate scale and bias into matrix, as we rely on normalized uv coordinates for fragment clipping
+- 哪些物件需要受贴花影响是按照上述的box projected的计算逻辑给出的，被该box覆盖的物件的部分就需要被影响
+- 对于每个贴花，在做贴图采样的时候，还需要考虑缩放跟偏移，不过由于需要依赖于计算得到的uv来做贴花的可见性clip，因此这部分没有直接放到box projection的矩阵运算中
 
 ![](https://gerigory.github.io/assets/img/Siggraph-2016-the-devil-is-in-the-details/幻灯片12.PNG)
 
-Limited to 4k per view frustum
-Lodding
-Art setups max view distance
-Quality settings affect view distance as well
-Works on non-deformable geometry
-Apply object transformation to decal
+关于贴花的其他一些信息：
+
+1. 贴花的布置是美术同学手动完成的，包括每个贴花的配置参数
+2. 每一帧可见的贴花的数目（还是贴图分辨率？）限制在4k，通常是1k及以下
+3. 美术同学会需要设计贴花的可见距离以实现消耗的lod处理，这个距离会跟画质等级有关系
+4. 场景贴花只对静态不可形变的物体生效
 
 ![](https://gerigory.github.io/assets/img/Siggraph-2016-the-devil-is-in-the-details/幻灯片13.PNG)
 
-Some results
-
 ![](https://gerigory.github.io/assets/img/Siggraph-2016-the-devil-is-in-the-details/幻灯片14.PNG)
 
-Some results – this type of details are usually approximated in a relatively brute force way with multiple layers (per drawcall), on our case the cost is proportional to screen coverage
+上面两图展示了贴花的实际效果。
+
+有的时候，会需要通过多层贴花叠加来提供更为真实的细节，这里当然会有overdraw的消耗，通常这个消耗也会跟屏幕覆盖率有关系。
 
 ![](https://gerigory.github.io/assets/img/Siggraph-2016-the-devil-is-in-the-details/幻灯片15.PNG)
 
-Glass is another good example: the haze / condensation / blood – is all decaling modifying surface properties.
+针对玻璃的各种效果，通常也是通过贴花来完成，如玻璃上的薄雾、水雾凝结、血渍等
 
 ![](https://gerigory.github.io/assets/img/Siggraph-2016-the-devil-is-in-the-details/幻灯片16.PNG)
 
+接下来介绍光照部分，有如下的一些关键要点：
+
+1. 针对不同的物件（透明、不透等），采用一条统一的光照路径（同样的计算逻辑）
+2. 不存在shader变体焦虑
+   1. 所有静态物体都走同一条shader计算路径
+   2. 更好的避免渲染时的上下文切换
+3. 针对不同的光照分量，这里总结如下
+   1. indirect diffuse部分，对于静态物体而言，会使用lightmap，动态物体则基于irradiance volume（PRT？）
+   2. indirect specular部分的反射计算来自于三部分：环境光probe、SSR以及高光遮蔽
+   3. 动态光源，只考虑直接光部分，做动态计算+shadow即可
+
 ![](https://gerigory.github.io/assets/img/Siggraph-2016-the-devil-is-in-the-details/幻灯片17.PNG)
+
+考虑贴花跟光照部分，每个物体的渲染shader伪代码给出如上：
+
+1. 遍历贴花，基于可见性判断是否跳出贴花相关计算，不跳出则执行贴图的读取与混合
+2. 遍历光源，判断是否受该光源影响，受影响则计算BRDF，叠加阴影并做光照的累加
 
 ![](https://gerigory.github.io/assets/img/Siggraph-2016-the-devil-is-in-the-details/幻灯片18.PNG)
 
