@@ -181,44 +181,46 @@ description: 本文分享的是idTech在Siggraph 2016分享的一些渲染相关
 
 ![](https://gerigory.github.io/assets/img/Siggraph-2016-the-devil-is-in-the-details/幻灯片18.PNG)
 
-Shadows are cached ahead of time into an Atlas
-PC: 8k x 8k atlas ( high spec ), 32 bit 
-Consoles: 8k x 4k, 16 bit
-Variable resolution based on distance
-Time slicing also based on distance
-Optimized mesh for static geometry
-Light mostly static ? 
-Cache static geometry shadow map
-No updates ? Ship it
-Updates ? Composite dynamic geometry with cached result
-Art setup and quality settings affects all
-Resolution, time sliccing, etc
+来看下阴影部分的实现细节：
+
+1. 阴影贴图合并成了Atlas
+2. 对于符合条件的阴影做了Cache处理，针对不同平台，在分辨率上以及数据格式上做了差异化处理
+3. 对于同一盏光源的阴影贴图，会基于距离
+   1. 调整分辨率（甚至格式？）
+   2. 调整更新策略
+4. 用了proxy mesh代替原始mesh来生成阴影
+5. 对于光源不变的情况来说，这里会根据具体情况来做区别处理
+   1. 首先需要cache静态物件
+   2. 其次，针对参与投影的物件是否会有更新来做不同处理
+      1. 有更新的话，需要在cache部分上叠加动态的
+      2. 无更新那就直接使用cache贴图（不做copy & draw）
+6. 将上述方案的控制参数暴露给美术同学
 
 ![](https://gerigory.github.io/assets/img/Siggraph-2016-the-devil-is-in-the-details/幻灯片19.PNG)
 
-Index into shadow frustum projection matrix
-Then scale / bias into atlas
-Same PCF lookup code for all light types
-Less VGPR pressure
-This includes directional lights cascades
-Dither used between cascades 
-Single cascade lookup  
-Attempted VSM and derivatives
-All with several artefacts
-Conceptually has good potential for Forward
-Eg. decouple filtering frequency from rasterization
+1. 除了shadowmap合并成atlas之外，每盏光源对应的shadow绘制的投影矩阵也需要packed到一起，之后根据光源的索引进行取用
+2. 为了降低VGPR（寄存器）压力，这里将所有类型光源（包括方向光）的PCF阴影计算逻辑统一成一套代码（不用为不同类型编写单独的实现逻辑，也就不用占据更多的寄存器？）
+3. 方向光的特殊处理
+   1. 相邻等级之间会通过dither做过渡（UE没有做这个处理）
+   2. 只做一次采样，不做两次采样+混合，可以降低消耗
+4. 尝试了VSM以及相关变种，发现存在各种瑕疵，或许对于前向管线而言更为合适
 
 ![](https://gerigory.github.io/assets/img/Siggraph-2016-the-devil-is-in-the-details/幻灯片20.PNG)
 
-First person arms self-shadows.
-Dedicated atlas portion.
+针对FPS游戏，在手臂处开启跟关闭自阴影会有较大区别，这个主要是通过一张单独的shadowmap来实现支持，在主机（性能吃紧）上会关闭这个特性。
 
 ![](https://gerigory.github.io/assets/img/Siggraph-2016-the-devil-is-in-the-details/幻灯片21.PNG)
 
-Dynamics Indirect lighting 
-Irradiance Probes approximation
-SH 2 encoded
-Volume texture
+clustered 管线下，光照计算逻辑尤其需要关注寄存器压力，这里有一些使用tips：
+
+1. 对于有较长生命周期的向量数据，可以考虑转成标量，同时调整数据格式
+2. 尽量缩短寄存器的常驻时间
+3. 减少嵌套循环，从而降低最差情况下的寄存器占用
+4. 减少分支（多分支寄存器占用叠加，如果是动态分支就没事了吧？）
+5. PS4上只有56个寄存器，PC上会高一些
+6. 对于不同的GPU品牌，使用倾向也有所不同，比如
+   1. 英伟达芯片倾向于使用UBO/ConstantBuffer等
+   2. AMD则倾向于SSBO/UAV
 
 ![](https://gerigory.github.io/assets/img/Siggraph-2016-the-devil-is-in-the-details/幻灯片22.PNG)
 
