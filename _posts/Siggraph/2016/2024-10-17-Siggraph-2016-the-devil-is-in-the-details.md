@@ -224,41 +224,69 @@ clustered 管线下，光照计算逻辑尤其需要关注寄存器压力，这�
 
 ![](https://gerigory.github.io/assets/img/Siggraph-2016-the-devil-is-in-the-details/幻灯片22.PNG)
 
-Transparents are generally FX from game team
+毛玻璃的实现逻辑：
+
+1. 先将Scene Color做几次下采样，得到一个mipmap，最高分辨率是1/2全屏分辨率
+2. 通过高斯模糊来得到下采样数据
+3. 之后在绘制各个毛玻璃物件的时候，会基于物件表面的光滑度对采样时的mipmap层级进行调制
+4. 出于性能考虑，折射transfer（这是啥？）最多只能有两个（？）
+5. 为了实现表面细节的区别，这里会通过贴花来为不同位置赋予不同的参数
+   1. 不同光滑度、形状的玻璃叠加不同的贴花，通过乘法原则实现更丰富的表现
 
 ![](https://gerigory.github.io/assets/img/Siggraph-2016-the-devil-is-in-the-details/幻灯片23.PNG)
 
+针对特效的光照计算，有几种方法，从顶点光照、顶点+Tessellation光照、像素光照以及混合分辨率光照，都有各自的问题。
+
 ![](https://gerigory.github.io/assets/img/Siggraph-2016-the-devil-is-in-the-details/幻灯片24.PNG)
 
-Observation
-Particles are generally low frequency / low res
-Maybe render a quad per particle and cache lighting result ?
-Similar to Texel / Object space Shading ( amd ), but lighting only
-Decouples lighting frequency from screen resolution = Profit
-Lighting performance independent from screen resolution
-Adaptive resolution heuristic depending on screen size / distance
-E.g. 32x32, 16x16, 8x8
-Exact same lighting code path
-Final particle is still full res
-Loads lighting result with a Bicubic kernel.
+基于观察发现粒子所接受的光照变化相对低频，且整个粒子面片上的光照变化也相对低频，因此可以考虑将粒子本身的渲染分辨率与其光照计算的频率解耦开来。
+
+简单来说，就是基于粒子到相机的距离或者屏占比，为不同类型的粒子指定不同分辨率的quad（对齐粒子朝向），对quad上的每个元素进行光照计算，之后在渲染粒子的时候，安超bicubic插值逻辑对quad上的光照结果进行取用。
+
+这里的性能收益来自两方面：
+
+1. quad的光照计算结果可以cache，比如粒子本身的位置跟光源数据都无变化时，此时结果就不用更新
+2. quad的光照计算频率可以独立于粒子本身在屏幕中的像素，不受屏幕分辨率的影响（其实还是受一点？）
+
+这里的代价为：
+
+1. 渲染粒子之前，需要先绘制lighting quads，这里会有一次RT切换的成本
+2. quads的绘制可以通过instancing完成，写入到一张Atlas中，增加一个额外的DP
+3. 绘制粒子的时候，会需要多一次额外的采样
+   1. 为了提升缓存的命中率，相邻的粒子对应的quad应该要放在空间相邻的位置上
 
 ![](https://gerigory.github.io/assets/img/Siggraph-2016-the-devil-is-in-the-details/幻灯片25.PNG)
 
+光照quad的结果最后会放到一张atlas中，避免渲染时DP被打断
+
 ![](https://gerigory.github.io/assets/img/Siggraph-2016-the-devil-is-in-the-details/幻灯片26.PNG)
+
+- Atlas的尺寸会跟随平台以及quality switch而调整，格式是R11G11B10。
+- 前面说了，为了提升缓存命中率，出于同一个特效中的粒子，对应的quads应该要放在空间相邻的区域，这里就为每个特效划分了一块区域，虽然有一点浪费，但是表现（性能）还是不错，所以就没有细究
+- 前面整理的新增消耗大多数情况下0.1ms就能搞定，复杂情况会去到1ms，但是相对于带来的收益而言，这部分的消耗大约只有1/10
+  - 此外，这部分工作可以借用Async Compute来实现，可以将这部分消耗并行去掉
 
 ![](https://gerigory.github.io/assets/img/Siggraph-2016-the-devil-is-in-the-details/幻灯片27.PNG)
 
+结果看着还挺不错的，就不知道上面说的逐粒子的光照quad指的是每个粒子面片，还是一整个特效？从需求层面来看，似乎是可以考虑将quad做成针对单个特效的billboard，比如上图中的云雾就可以只用一个quad？可能还得看下原始特效是如何渲染（光照）的，先从保守的方案尝试，再看要不要到这么激进。
+
 ![](https://gerigory.github.io/assets/img/Siggraph-2016-the-devil-is-in-the-details/幻灯片28.PNG)
 
-I’m asked frequently about the post processing on DOOM / idTech – fyi it’s essentially my 2013 Siggraph lecture
+Doom的后处理技术在Siggraph 2013中就做过介绍，所以这里就没有过多赘述，后面有需要再去翻翻。
 
 ![](https://gerigory.github.io/assets/img/Siggraph-2016-the-devil-is-in-the-details/幻灯片29.PNG)
 
-The GCN architectures features a scalar unit that can be leveraged by shader code to share some work within a wavefront. In particular, it can be really interesting to fetch data through this scalar unit rather than through vector memory operations. This has a few benefits. More data can be fetched at once (64 bytes vs 16 bytes). The data can be stored in SGPRs, thus potentially saving some precious VGPRs. Finally, since the data is scalar at this point, branching is guaranteed to be non-divergent, meaning that both code paths do not have to executed. This can be a powerful lever to speed up some rendering passes.
+GCN提供了一个叫做scalar unit的特性，这个特性可以用于在一个wavefront中实现计算结果的共享。
 
-Something to bear in mind when writing code using scalar data fetching is that we can expect VGPR savings only if this is the main code path instead of a fast path that can only be dynamically enabled. If multiple paths can be executed, register pressure cannot be lowered.
+相对于基于vector memory操作来获取数据，基于scalar unit获取数据有如下的一些好处：
 
-Let’s have a look at how we can leverage this scalar unit for our main opaque pass, which takes about half of the GPU frame duration.
+1. 一次性可以获取的数据会更多（64 B VS 16 B）
+2. 数据可以存储在SGPR中，从而降低shader的VGPR的消耗数目
+3. 由于数据是标量存储的，因此在执行分支计算的时候，就不用担心多个线程执行的逻辑不一致的问题，也就是说，对于每个像素（线程）而言，就不用两个分支都执行，从而加速整体的执行效率
+
+这里需要注意的是，只有当scalar unit执行的时主路径，而非某个在运行时根据条件动态开关的动态路径的时候，才能够节省VGPR的消耗，如果多条路径都要执行，那VGPR大概率还是会被占用，优化也就没了。
+
+下面看看这个特性是如何使用的
 
 ![](https://gerigory.github.io/assets/img/Siggraph-2016-the-devil-is-in-the-details/幻灯片30.PNG)
 
