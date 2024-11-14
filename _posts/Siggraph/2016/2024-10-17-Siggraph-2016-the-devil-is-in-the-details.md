@@ -290,73 +290,124 @@ GCN提供了一个叫做scalar unit的特性，这个特性可以用于在一个
 
 ![](https://gerigory.github.io/assets/img/Siggraph-2016-the-devil-is-in-the-details/幻灯片30.PNG)
 
-This is a pretty standard arena featured in Doom. Let’s have a look at access patterns for our clustered forward shading.
+这是一个debug视图，有点类似于性能分析中常见的热力图（可以考虑在热力图的框架上增加类似的debug信息），其中：
 
-In green, we can see all the waves that only access one node from the cluster. This covers the majority of the screen, and naturally matches the setup of the cluster cells. We can easily exploit this to speed up how we fetch data. Let’s focus now on those wavefronts that are reading from different cells.
-
-We can see that those, in red, still cover an important part of the screen. However, this isn’t telling the whole story. Let’s look more in depth at the actual lighting data that’s being fetched from those cells.
-
-What we’re looking at now is how much data is being shared across all threads within a wavefront. In blue wavefronts, all threads are accessing the exact same light and decal data. Red waves have 5 or more items that aren’t being access by every single thread. As we can see here, the vast majority of cluster data, meaning lights and decals, are being accessed in a very coherent manner within one wavefront. Even when touching multiple cells, the content of those cells is mostly identical, and that’s a property we should try and leverage.
+1. 蓝色表示wavefront中多个线程对应的光源、贴花等数据完全相同的区域，覆盖了场景的绝大部分区域，表示大部分区域下wavefront的现成执行一致性都还比较高，缓存命中率高
+2. 绿色表示wavefront中多个线程只受一盏光源影响的区域，这个符合cluster cell的范围设定，即屏幕空间处于一个wavefront中的线程（像素），其对应的光源列表基本上是相同的，从而可以较好的实现wavefront之间的数据共享
+3. 红色部分表示wavefront中多个线程之间需要获取的光源数据有所区别的区域，具体一点则是有5个以上的元素（光源、贴花等）并不是每个线程都需要用到（即是局部共享）。这个覆盖范围也不小，
 
 ![](https://gerigory.github.io/assets/img/Siggraph-2016-the-devil-is-in-the-details/幻灯片31.PNG)
 
-We’ve seen that with a clustered lighting approach, most wavefronts only touch one cell. This is mostly independent from geometric complexity. But the interesting part is that even when touching multiple cells, most of the actual lighting data is still shared, because lights and decals often overlap across multiple cells within the cluster. Overall, threads within a given wavefront mostly end up fetching the exact same data.
+基于前面的观察有上述的结论，即大部分情况下，一个wavefront中各个线程对应的元素基本上都是共享的，因此：
 
-This means that independently fetching this data per thread is clearly not optimal, since we’re not exploiting this convergence at all. What we could do instead is serialize the way we’re gathering the data so that we can use the scalar unit.
+1. 以线程为单位来访问cell数据就会有点浪费（类似于逻辑是应该放VS还是PS）
+2. 可以考虑将这部分共享的数据抽取出来，方便通过标量计算操作获取（以降低VGPR压力？）
 
 ![](https://gerigory.github.io/assets/img/Siggraph-2016-the-devil-is-in-the-details/幻灯片32.PNG)
 
-First, let’s review our setup. Every cell within the cluster stores a sorted list of light and decal offsets. By the very nature of the algorithm, every thread within a wave will potentially be accessing a different cell, and therefore end up iterating on those sorted arrays independently from the other threads.
+首先，先回顾一下设置。Cluster的每个Cell都存储了一个灯光和贴花偏移的排序列表。
 
-What we want to do is serialize this iteration. In a simplified example where 3 threads are independently iterating over [A, B, C], [B, C, E] and [A, C, D, E], we could instead serially iterate over [A, B, C, D, E]. In total, we’d be running more iterations of our lighting loop, but fetching data would then be significantly faster, and we’d potentially save quite a few registers in the process.
+根据算法，wavefront中的每个线程都有可能访问不同的Cell，因此需要使得各个线程能够独立的对这些排序数组进行遍历计算。
 
-The way we do this is by having each thread maintain an index within the light/decal ID array it’s iterating on. We then compute the smallest item ID across all threads (using a combination of swizzle and readlane instructions). The resulting light/decal ID is then uniform (the value is the same for all threads). We can therefore fetch the content through the scalar unit and then process the item. Threads that were referring to this item (i.e. their divergent value is the same as the wave min value) then increment their local index and move to the next item. This ultimately guarantees that all items are processed exactly once and in order.
+具体而言，就是将遍历过程做成串行。举个例子，有三个线程需要分别独立遍历 [A、B、C]、[B、C、E] 和 [A、C、D、E]，这时我们可以串行迭代 [A、B、C、D、E]，从而使得各个线程访问的数据是一致的。
+
+注意，虽然这种做法会导致循环迭代次数变多，但获取数据的速度会明显加快，同时在这个过程中，还有可能节省寄存器的消耗。
+
+再具体一点：
+
+1. 每个线程会需要在待遍历的灯光/贴花 ID数组中维护一个索引。
+2. 计算所有线程中需要访问的最小的元素 ID（结合使用 swizzle 和 readlane 指令），从而保证各个线程访问的起始灯光/贴花 ID 是相同的
+3. 在实际计算的时候，通过scalar unit遍历数组，并完成相关元素的计算。
+4. 完成后，关联此元素的线程（难道不是wavefront中的所有线程？）会递增本地索引，并处理下一个元素。
+
+通过这种方式，可以保证所有元素都能按顺序处理一次（不会带来浪费吗？难道获取数据的加速能够掩盖这部分损失？）。
 
 ![](https://gerigory.github.io/assets/img/Siggraph-2016-the-devil-is-in-the-details/幻灯片33.PNG)
 
-The approach just discussed provides a significant boost in most cases, but there are some refinements we can do on top.
+针对前面的实现框架，这里还打了两个补丁：
 
-First of all, if only one cell is accessed by an entire wavefront, we can use a dedicated fast path. By doing so, we can avoid computing the smallest item ID, which isn’t cheap on 1 & 2. We can also use scalar operations to fetch cell content. This fast path will not result in any VGPR reduction since it has to live with the other path we just described, but can still result in an additional performance increase for those wavefronts touching only one cell.
+1. 只访问cell数据的wavefront会走单独的快速计算逻辑，跳过重度的最小ID计算逻辑，改用一些简单计算
+2. 串行处理能提速的前提是各个线程的局部一致性较好，对于各个线程访问数据较为杂乱的情况，会是一个负优化，不透明物件的渲染基本上还好，不用特别处理，但是对于部分应用场景如粒子照明atlas生成环节则需要关闭该功能
 
-Also, it is worth noticing that the main reason this scalar approach works is because most of the data that’s been accessed by a wave is shared by all threads, because of their locality. If for some reason threads become spread apart too much in world space, this could actually seriously hurt performance. This typically isn’t something to worry about for an opaque pass, but with the decoupled approach we use for particle lighting, it became an issue, since samples could be pretty far apart from each other. In that case, sticking to divergent fetches was actually faster.
-
-Overall, using those optimizations approach, we were able to get a 30% speedup on the opaque pass at 1080p on PS4. Using the fast path alone results in a significant boost already, but doesn’t increase occupancy. Using the scalar iteration on the merged cell content allows us to get rid of the divergent code path altogether, thus saving some more registers and gaining us an extra wavefront.
+上图给了具体的性能优化表现，可以从原始的8.9毫秒的消耗降低到6.2ms（同时还能够减少寄存器的占用，提升可并行执行的wavefront的数目）。
 
 ![](https://gerigory.github.io/assets/img/Siggraph-2016-the-devil-is-in-the-details/幻灯片34.PNG)
 
+这里还做了一个动态调整分辨率的计算策略，会根据GPU的负载来调整以保障流畅性：
+
+1. 通过降低viewport的尺寸来实现，需要修改实现代码（只能在OpenGL上执行？）
+2. TAA可以从不同分辨率上拿到数据，效果不咋受影响
+3. 通过Async Compute来完成上采样
+
 ![](https://gerigory.github.io/assets/img/Siggraph-2016-the-devil-is-in-the-details/幻灯片35.PNG)
+
+基于如下的两个观察：
+
+1. 阴影、深度渲染pass很少使用compute shader
+2. 不透明渲染pass在compute shader上的占用也不高
+
+因此可以考虑在这些pass执行的时候，并行叠加后处理pass（通常用compute shader完成，借用async compute提升渲染效率）：
+
+1. 后处理、AA、上采样、UI集成可以放到compute queue中
+2. GUI的绘制还是在GFX queue中
+3. 上述第N帧的compute queue的计算逻辑将会与第N+1帧的shadow/depth/opaque绘制逻辑并行
+4. 如果可以的话，还可以通过compute queue完成present（？）以减少延迟
 
 ![](https://gerigory.github.io/assets/img/Siggraph-2016-the-devil-is-in-the-details/幻灯片36.PNG)
 
-To conclude, I’d like to share a couple of common sense tips. GCN lets you setup some limits on how wavefronts are being scheduled. This is something that’s definitely worth spending a bit of time with during the later stages of a project. There’s no reason not to frequently update those limits. We’ve found out for instance that disabling vertex shader parameter cache late allocation during static geometry rendering, where each triangle is potentially yielding a significant number of pixels was beneficial.
+最后给一些性能调优的建议：
 
-If using async compute, those limits should definitely be tweaked again. Assigning too many or too little wavefronts to an async compute task can result in an effective serialization of the task. Using async compute can in general result in more frequent thrashing of GPU caches. Restricting the number of waves allowed to be in-flight, or locking a task to only a subset of the compute units can mitigate this.
+1. 通过对细节、参数的调校，DOOM在部分场景下优化了1.5ms的消耗
+2. 在单位面片像素数目占比过高的静态物件绘制的时候，禁用掉VS参数缓存的延迟分配（vertex shader parameter cache late allocation，）功能会有性能提升
+3. Async Compute的引入会加重缓存的破坏，因此限制这部分compute的使用频率与负担有助于提升性能
 
-Overall, by fine-tuning wave limits throughout the whole frame, as opposed to sticking to the default values, we were able to save up to 1.5ms in some scenes on Doom.
+> ### VS参数缓存的延迟分配解释
+>
+> #### 背景
+>
+> 在现代图形渲染管线中，顶点着色器（Vertex Shader）负责处理每个顶点的数据。这些数据通常包括顶点位置、颜色、法线、纹理坐标等。为了提高渲染性能，GPU会使用某种形式的缓存机制来存储和传递这些数据。
+>
+> #### 参数缓存（Parameter Cache）
+>
+> 参数缓存是GPU用来暂时存储顶点着色器所需数据的一种方式。传统上，参数缓存会在顶点着色器执行之前分配和准备好，以便在着色过程中进行快速访问。然而，这种方法在处理复杂场景或动态变化的内容时，可能会导致效率低下，尤其是在缓存命中率低的情况下。
+>
+> #### 延迟分配（Late Allocation）
+>
+> **Late Allocation**的思想是推迟参数缓存的分配时机。与其在顶点着色器开始执行之前就分配缓存，不如等到确定需要这些数据时才进行分配。这有几个潜在优点：
+>
+> 1. **减少浪费**：只有在需要数据时才分配缓存，避免了不必要的内存占用。
+> 2. **提高缓存利用率**：通过延迟分配，可以更智能地管理缓存，提升命中率和效率。
+> 3. **灵活性**：在更动态的场景下，延迟分配能够更好应对不断变化的数据需求。
 
 ![](https://gerigory.github.io/assets/img/Siggraph-2016-the-devil-is-in-the-details/幻灯片37.PNG)
 
-One last thing that’s worth spending a bit of time fine tuning is register allocation. VGPRs in particular are extremely precious, and will most of the time control the maximum occupancy a shader can have. Aiming for strict divisors of 256 when optimizing register pressure of a given shader, might not always give the best results, contrary to one’s original intuition. It is important to bear in mind that a given shader will often not run in complete isolation. Some PS waves will likely run in parallel with some VS waves of the matching or subsequent draw calls. Also, if you’re using async compute, there’s going to be some more contention on those registers. It can therefore be beneficial to aim for other values when it comes to register allocation. As an example, in Doom we aimed to 56 VGPRs for our opaque pass PS, and 24 VGPRs for the matching VS. This allowed us to have more waves in flight overall compared to a naïve 64VGPR solution, which would have prevented anything from running in parallel with 4 PS waves. Overall, this saves more than half a millisecond.
+ 最后介绍一下寄存器分配的约束：
+
+1. 在大多数情况下应该控制Shader所使用的寄存器的最大数目。
+   1. 不必严格以 256 的除数为目标，部分情况下换其他的数值可能结果更好
+   2. Pixel Shader并不是完全独立执行的，需要考虑并发的其他shader，async Compute、vertex shader等都会占用寄存器
+2. 在 Doom 中
+   1. 不透明 PS 分配了 56 个 VGPR， VS 分配了 24 个 VGPR：在整体上可以有更多的wavefront并行执行
+   2. 相对而言，如果激进的分配 64个VGPR 给PS，当我们有 4 个 PS wavefront在执行的时候，就没有办法并行运行其他的wavefront了
 
 ![](https://gerigory.github.io/assets/img/Siggraph-2016-the-devil-is-in-the-details/幻灯片38.PNG)
 
-Some results 
-
 ![](https://gerigory.github.io/assets/img/Siggraph-2016-the-devil-is-in-the-details/幻灯片39.PNG)
 
-Decoupling frequency of costs = Profit
-Room for improvements on our side
-Texture quality
-Global illumination
-Overall detail
-Workflows
-etc
-Room for improvement on IHVs side
-Profiling tools in general are about 1 decade behind what we have on consoles
-AMD: please fix your shader compiler
-Can we get Barycentric coordinates on all HW exposed?
-Sampler Rect 
-Better filtering
+还有一些其他待优化的点，项目侧：
+
+- Texture quality
+- Global illumination
+- Overall detail
+- Workflows等
+
+硬件、驱动侧：etc
+
+- Profiling tools in general are about 1 decade behind what we have on consoles
+- AMD: please fix your shader compiler
+- Can we get Barycentric coordinates on all HW exposed?
+- Sampler Rect 
+- Better filtering
 
 ![](https://gerigory.github.io/assets/img/Siggraph-2016-the-devil-is-in-the-details/幻灯片40.PNG)
 
@@ -370,16 +421,25 @@ Better filtering
 
 ![](https://gerigory.github.io/assets/img/Siggraph-2016-the-devil-is-in-the-details/幻灯片45.PNG)
 
+cubemap的分辨率是128，BC6H
+
 ![](https://gerigory.github.io/assets/img/Siggraph-2016-the-devil-is-in-the-details/幻灯片46.PNG)
 
-Take best from both worlds
-Performance & Screen Space Approx. from Deferred
-Simplicity & unified from Forward.
+期望结合两种管线的优点：
 
-No fat render targets used on idTech. Not GCN / console friendly
-Normals also used for GPU Particles
+- Performance & Screen Space Approx. from Deferred
+- Simplicity & unified from Forward.
 
-Main Lighting Buffer: R11G11B10F
+对于RT，不希望太重度，对于GCN/主机都不太友好（移动端也是）
+
+Main Lighting Buffer的格式是: R11G11B10F
+
+最终的AO、反射效果是多种方案的结合：
+
+1. SSR
+2. 环境反射cubemap
+3. AO/SO
+4. 雾效
 
 ## 参考
 
