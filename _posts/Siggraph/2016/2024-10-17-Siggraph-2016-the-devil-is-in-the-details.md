@@ -2,7 +2,7 @@
 layout: post
 title: 【Siggraph 2016】the devil is in the details
 date: 2024-10-17
-img: Siggraph-2016-the-devil-is-in-the-details/幻灯片1.PNG # Add image post (optional)
+img: Siggraph/2016/Siggraph-2016-the-devil-is-in-the-details/幻灯片1.PNG # Add image post (optional)
 fig-caption: # Add figcaption (optional)
 tags: [idTech, Rendering, Siggraph, 2016]
 description: 本文分享的是idTech在Siggraph 2016分享的一些渲染相关的技巧
@@ -13,7 +13,7 @@ description: 本文分享的是idTech在Siggraph 2016分享的一些渲染相关
 
 ---
 
-![](https://gerigory.github.io/assets/img/Siggraph-2016-the-devil-is-in-the-details/幻灯片2.PNG)
+![](https://gerigory.github.io/assets/img/Siggraph/2016/Siggraph-2016-the-devil-is-in-the-details/幻灯片2.PNG)
 
 本文的重点是渲染，且着重关注少数几个关键特性。
 
@@ -23,7 +23,7 @@ description: 本文分享的是idTech在Siggraph 2016分享的一些渲染相关
 
 这里需要提到的一点是，由于提前做了精心设计，因此最终版本中只包含100个左右的unique shader，大约350个PSO（太省了）。
 
-![](https://gerigory.github.io/assets/img/Siggraph-2016-the-devil-is-in-the-details/幻灯片3.PNG)
+![](https://gerigory.github.io/assets/img/Siggraph/2016/Siggraph-2016-the-devil-is-in-the-details/幻灯片3.PNG)
 
 在60 fps的帧率下，各个pass的耗时统计：
 
@@ -44,7 +44,7 @@ description: 本文分享的是idTech在Siggraph 2016分享的一些渲染相关
    1. 比如开启DOF的话，消耗会高一些等（在主机跟vulkan下，后处理是放到Async Compute中执行的）
    2. 比如部分情况下，特效会带来较高的overdraw，这个也会导致性能数据的波动
 
-![](https://gerigory.github.io/assets/img/Siggraph-2016-the-devil-is-in-the-details/幻灯片4.PNG)
+![](https://gerigory.github.io/assets/img/Siggraph/2016/Siggraph-2016-the-devil-is-in-the-details/幻灯片4.PNG)
 
 这里来介绍一下光照与shading的计算逻辑，总体思路是对下述两个talk中的方案的继承，实际上是clustered rendering策略，即基于三维的空间划分，得到的cluster中计算都会被哪些光源影响，从而降低光照计算的复杂度，具体参考[milo的分享](http://miloyip.com/2014/many-lights/)：
 
@@ -56,7 +56,7 @@ description: 本文分享的是idTech在Siggraph 2016分享的一些渲染相关
 1. 透明物件的绘制不用与不透明物件分割开来
 2. Depth相关的两点没看明白
 
-![](https://gerigory.github.io/assets/img/Siggraph-2016-the-devil-is-in-the-details/幻灯片5.PNG)
+![](https://gerigory.github.io/assets/img/Siggraph/2016/Siggraph-2016-the-devil-is-in-the-details/幻灯片5.PNG)
 
 这里介绍了clustered rendering中cluster的计算逻辑：
 
@@ -67,14 +67,14 @@ description: 本文分享的是idTech在Siggraph 2016分享的一些渲染相关
    1. item数据包含环境光probe、贴花以及光源（这三者都可以，也都应该做延迟计算）
    2. 归类的方式是将item的OBB（或frustum）做光栅化，之后与与当前cluster屏幕空间的xy以及depth bounds做比较
 
-![](https://gerigory.github.io/assets/img/Siggraph-2016-the-devil-is-in-the-details/幻灯片6.PNG)
+![](https://gerigory.github.io/assets/img/Siggraph/2016/Siggraph-2016-the-devil-is-in-the-details/幻灯片6.PNG)
 
 前面介绍的是常规做法，这里给出优化做法，即将OBB/Frustum光栅化到屏幕空间来判断是否相交的做法改成Plane与AABB的相交（包含）测试，基于这个做法，性能会有较大提升：
 
 1. 一个Cluster在Clip Space中就是一个AABB，而OBB跟Frustum可以分别转化为6个或者5个Plane
 2. 由于对于每个Plane的计算过程是相同的，因此可以使用SIMD来做运算的加速，从而提升计算性能
 
-![](https://gerigory.github.io/assets/img/Siggraph-2016-the-devil-is-in-the-details/幻灯片7.PNG)
+![](https://gerigory.github.io/assets/img/Siggraph/2016/Siggraph-2016-the-devil-is-in-the-details/幻灯片7.PNG)
 
 最终得到的cluster数据结构包含两个list：
 
@@ -90,11 +90,11 @@ description: 本文分享的是idTech在Siggraph 2016分享的一些渲染相关
 3. Grid分辨率目前采用的是16x8x24，还是比较低的
    1. GCN部分没看明白？
 
-![](https://gerigory.github.io/assets/img/Siggraph-2016-the-devil-is-in-the-details/幻灯片8.PNG)
+![](https://gerigory.github.io/assets/img/Siggraph/2016/Siggraph-2016-the-devil-is-in-the-details/幻灯片8.PNG)
 
 这里给出cluster debug view，其中红色表示有10个以上的volume overlapping，而绿色表示5个以下的volume overlapping，橙色则是二者之间的，文中介绍，虽然这里还有优化的空间，但是性能表现已经够用了，所以就不改了，直接发吧。。。
 
-![](https://gerigory.github.io/assets/img/Siggraph-2016-the-devil-is-in-the-details/幻灯片9.PNG)
+![](https://gerigory.github.io/assets/img/Siggraph/2016/Siggraph-2016-the-devil-is-in-the-details/幻灯片9.PNG)
 
 管线部分介绍完了，下面来看看如何给场景增加各种各样的细节：
 
@@ -113,7 +113,7 @@ description: 本文分享的是idTech在Siggraph 2016分享的一些渲染相关
    5. dependent lookup带来的额外消耗
    6. 高清贴图跟BC压缩贴图混用带来的异常等
 
-![](https://gerigory.github.io/assets/img/Siggraph-2016-the-devil-is-in-the-details/幻灯片10.PNG)
+![](https://gerigory.github.io/assets/img/Siggraph/2016/Siggraph-2016-the-devil-is-in-the-details/幻灯片10.PNG)
 
 贴花常见的策略如mesh decal或者延迟decal，在trouble case的处理上会比较耗时间（没有具体说明是哪些trouble case？），这里给的策略是将贴花嵌入到正常物件绘制的光栅化逻辑中。
 
@@ -131,14 +131,14 @@ description: 本文分享的是idTech在Siggraph 2016分享的一些渲染相关
 4. 支持多层贴花的自定义排序
 5. 不会因为贴花带来drawcall的新增
 
-![](https://gerigory.github.io/assets/img/Siggraph-2016-the-devil-is-in-the-details/幻灯片11.PNG)
+![](https://gerigory.github.io/assets/img/Siggraph/2016/Siggraph-2016-the-devil-is-in-the-details/幻灯片11.PNG)
 
 贴花实现的一些细节介绍：
 
 - 哪些物件需要受贴花影响是按照上述的box projected的计算逻辑给出的，被该box覆盖的物件的部分就需要被影响
 - 对于每个贴花，在做贴图采样的时候，还需要考虑缩放跟偏移，不过由于需要依赖于计算得到的uv来做贴花的可见性clip，因此这部分没有直接放到box projection的矩阵运算中
 
-![](https://gerigory.github.io/assets/img/Siggraph-2016-the-devil-is-in-the-details/幻灯片12.PNG)
+![](https://gerigory.github.io/assets/img/Siggraph/2016/Siggraph-2016-the-devil-is-in-the-details/幻灯片12.PNG)
 
 关于贴花的其他一些信息：
 
@@ -147,19 +147,19 @@ description: 本文分享的是idTech在Siggraph 2016分享的一些渲染相关
 3. 美术同学会需要设计贴花的可见距离以实现消耗的lod处理，这个距离会跟画质等级有关系
 4. 场景贴花只对静态不可形变的物体生效
 
-![](https://gerigory.github.io/assets/img/Siggraph-2016-the-devil-is-in-the-details/幻灯片13.PNG)
+![](https://gerigory.github.io/assets/img/Siggraph/2016/Siggraph-2016-the-devil-is-in-the-details/幻灯片13.PNG)
 
-![](https://gerigory.github.io/assets/img/Siggraph-2016-the-devil-is-in-the-details/幻灯片14.PNG)
+![](https://gerigory.github.io/assets/img/Siggraph/2016/Siggraph-2016-the-devil-is-in-the-details/幻灯片14.PNG)
 
 上面两图展示了贴花的实际效果。
 
 有的时候，会需要通过多层贴花叠加来提供更为真实的细节，这里当然会有overdraw的消耗，通常这个消耗也会跟屏幕覆盖率有关系。
 
-![](https://gerigory.github.io/assets/img/Siggraph-2016-the-devil-is-in-the-details/幻灯片15.PNG)
+![](https://gerigory.github.io/assets/img/Siggraph/2016/Siggraph-2016-the-devil-is-in-the-details/幻灯片15.PNG)
 
 针对玻璃的各种效果，通常也是通过贴花来完成，如玻璃上的薄雾、水雾凝结、血渍等
 
-![](https://gerigory.github.io/assets/img/Siggraph-2016-the-devil-is-in-the-details/幻灯片16.PNG)
+![](https://gerigory.github.io/assets/img/Siggraph/2016/Siggraph-2016-the-devil-is-in-the-details/幻灯片16.PNG)
 
 接下来介绍光照部分，有如下的一些关键要点：
 
@@ -172,14 +172,14 @@ description: 本文分享的是idTech在Siggraph 2016分享的一些渲染相关
    2. indirect specular部分的反射计算来自于三部分：环境光probe、SSR以及高光遮蔽
    3. 动态光源，只考虑直接光部分，做动态计算+shadow即可
 
-![](https://gerigory.github.io/assets/img/Siggraph-2016-the-devil-is-in-the-details/幻灯片17.PNG)
+![](https://gerigory.github.io/assets/img/Siggraph/2016/Siggraph-2016-the-devil-is-in-the-details/幻灯片17.PNG)
 
 考虑贴花跟光照部分，每个物体的渲染shader伪代码给出如上：
 
 1. 遍历贴花，基于可见性判断是否跳出贴花相关计算，不跳出则执行贴图的读取与混合
 2. 遍历光源，判断是否受该光源影响，受影响则计算BRDF，叠加阴影并做光照的累加
 
-![](https://gerigory.github.io/assets/img/Siggraph-2016-the-devil-is-in-the-details/幻灯片18.PNG)
+![](https://gerigory.github.io/assets/img/Siggraph/2016/Siggraph-2016-the-devil-is-in-the-details/幻灯片18.PNG)
 
 来看下阴影部分的实现细节：
 
@@ -196,7 +196,7 @@ description: 本文分享的是idTech在Siggraph 2016分享的一些渲染相关
       2. 无更新那就直接使用cache贴图（不做copy & draw）
 6. 将上述方案的控制参数暴露给美术同学
 
-![](https://gerigory.github.io/assets/img/Siggraph-2016-the-devil-is-in-the-details/幻灯片19.PNG)
+![](https://gerigory.github.io/assets/img/Siggraph/2016/Siggraph-2016-the-devil-is-in-the-details/幻灯片19.PNG)
 
 1. 除了shadowmap合并成atlas之外，每盏光源对应的shadow绘制的投影矩阵也需要packed到一起，之后根据光源的索引进行取用
 2. 为了降低VGPR（寄存器）压力，这里将所有类型光源（包括方向光）的PCF阴影计算逻辑统一成一套代码（不用为不同类型编写单独的实现逻辑，也就不用占据更多的寄存器？）
@@ -205,11 +205,11 @@ description: 本文分享的是idTech在Siggraph 2016分享的一些渲染相关
    2. 只做一次采样，不做两次采样+混合，可以降低消耗
 4. 尝试了VSM以及相关变种，发现存在各种瑕疵，或许对于前向管线而言更为合适
 
-![](https://gerigory.github.io/assets/img/Siggraph-2016-the-devil-is-in-the-details/幻灯片20.PNG)
+![](https://gerigory.github.io/assets/img/Siggraph/2016/Siggraph-2016-the-devil-is-in-the-details/幻灯片20.PNG)
 
 针对FPS游戏，在手臂处开启跟关闭自阴影会有较大区别，这个主要是通过一张单独的shadowmap来实现支持，在主机（性能吃紧）上会关闭这个特性。
 
-![](https://gerigory.github.io/assets/img/Siggraph-2016-the-devil-is-in-the-details/幻灯片21.PNG)
+![](https://gerigory.github.io/assets/img/Siggraph/2016/Siggraph-2016-the-devil-is-in-the-details/幻灯片21.PNG)
 
 clustered 管线下，光照计算逻辑尤其需要关注寄存器压力，这里有一些使用tips：
 
@@ -222,7 +222,7 @@ clustered 管线下，光照计算逻辑尤其需要关注寄存器压力，这�
    1. 英伟达芯片倾向于使用UBO/ConstantBuffer等
    2. AMD则倾向于SSBO/UAV
 
-![](https://gerigory.github.io/assets/img/Siggraph-2016-the-devil-is-in-the-details/幻灯片22.PNG)
+![](https://gerigory.github.io/assets/img/Siggraph/2016/Siggraph-2016-the-devil-is-in-the-details/幻灯片22.PNG)
 
 毛玻璃的实现逻辑：
 
@@ -233,11 +233,11 @@ clustered 管线下，光照计算逻辑尤其需要关注寄存器压力，这�
 5. 为了实现表面细节的区别，这里会通过贴花来为不同位置赋予不同的参数
    1. 不同光滑度、形状的玻璃叠加不同的贴花，通过乘法原则实现更丰富的表现
 
-![](https://gerigory.github.io/assets/img/Siggraph-2016-the-devil-is-in-the-details/幻灯片23.PNG)
+![](https://gerigory.github.io/assets/img/Siggraph/2016/Siggraph-2016-the-devil-is-in-the-details/幻灯片23.PNG)
 
 针对特效的光照计算，有几种方法，从顶点光照、顶点+Tessellation光照、像素光照以及混合分辨率光照，都有各自的问题。
 
-![](https://gerigory.github.io/assets/img/Siggraph-2016-the-devil-is-in-the-details/幻灯片24.PNG)
+![](https://gerigory.github.io/assets/img/Siggraph/2016/Siggraph-2016-the-devil-is-in-the-details/幻灯片24.PNG)
 
 基于观察发现粒子所接受的光照变化相对低频，且整个粒子面片上的光照变化也相对低频，因此可以考虑将粒子本身的渲染分辨率与其光照计算的频率解耦开来。
 
@@ -255,26 +255,26 @@ clustered 管线下，光照计算逻辑尤其需要关注寄存器压力，这�
 3. 绘制粒子的时候，会需要多一次额外的采样
    1. 为了提升缓存的命中率，相邻的粒子对应的quad应该要放在空间相邻的位置上
 
-![](https://gerigory.github.io/assets/img/Siggraph-2016-the-devil-is-in-the-details/幻灯片25.PNG)
+![](https://gerigory.github.io/assets/img/Siggraph/2016/Siggraph-2016-the-devil-is-in-the-details/幻灯片25.PNG)
 
 光照quad的结果最后会放到一张atlas中，避免渲染时DP被打断
 
-![](https://gerigory.github.io/assets/img/Siggraph-2016-the-devil-is-in-the-details/幻灯片26.PNG)
+![](https://gerigory.github.io/assets/img/Siggraph/2016/Siggraph-2016-the-devil-is-in-the-details/幻灯片26.PNG)
 
 - Atlas的尺寸会跟随平台以及quality switch而调整，格式是R11G11B10。
 - 前面说了，为了提升缓存命中率，出于同一个特效中的粒子，对应的quads应该要放在空间相邻的区域，这里就为每个特效划分了一块区域，虽然有一点浪费，但是表现（性能）还是不错，所以就没有细究
 - 前面整理的新增消耗大多数情况下0.1ms就能搞定，复杂情况会去到1ms，但是相对于带来的收益而言，这部分的消耗大约只有1/10
   - 此外，这部分工作可以借用Async Compute来实现，可以将这部分消耗并行去掉
 
-![](https://gerigory.github.io/assets/img/Siggraph-2016-the-devil-is-in-the-details/幻灯片27.PNG)
+![](https://gerigory.github.io/assets/img/Siggraph/2016/Siggraph-2016-the-devil-is-in-the-details/幻灯片27.PNG)
 
 结果看着还挺不错的，就不知道上面说的逐粒子的光照quad指的是每个粒子面片，还是一整个特效？从需求层面来看，似乎是可以考虑将quad做成针对单个特效的billboard，比如上图中的云雾就可以只用一个quad？可能还得看下原始特效是如何渲染（光照）的，先从保守的方案尝试，再看要不要到这么激进。
 
-![](https://gerigory.github.io/assets/img/Siggraph-2016-the-devil-is-in-the-details/幻灯片28.PNG)
+![](https://gerigory.github.io/assets/img/Siggraph/2016/Siggraph-2016-the-devil-is-in-the-details/幻灯片28.PNG)
 
 Doom的后处理技术在Siggraph 2013中就做过介绍，所以这里就没有过多赘述，后面有需要再去翻翻。
 
-![](https://gerigory.github.io/assets/img/Siggraph-2016-the-devil-is-in-the-details/幻灯片29.PNG)
+![](https://gerigory.github.io/assets/img/Siggraph/2016/Siggraph-2016-the-devil-is-in-the-details/幻灯片29.PNG)
 
 GCN提供了一个叫做scalar unit的特性，这个特性可以用于在一个wavefront中实现计算结果的共享。
 
@@ -288,7 +288,7 @@ GCN提供了一个叫做scalar unit的特性，这个特性可以用于在一个
 
 下面看看这个特性是如何使用的
 
-![](https://gerigory.github.io/assets/img/Siggraph-2016-the-devil-is-in-the-details/幻灯片30.PNG)
+![](https://gerigory.github.io/assets/img/Siggraph/2016/Siggraph-2016-the-devil-is-in-the-details/幻灯片30.PNG)
 
 这是一个debug视图，有点类似于性能分析中常见的热力图（可以考虑在热力图的框架上增加类似的debug信息），其中：
 
@@ -296,14 +296,14 @@ GCN提供了一个叫做scalar unit的特性，这个特性可以用于在一个
 2. 绿色表示wavefront中多个线程只受一盏光源影响的区域，这个符合cluster cell的范围设定，即屏幕空间处于一个wavefront中的线程（像素），其对应的光源列表基本上是相同的，从而可以较好的实现wavefront之间的数据共享
 3. 红色部分表示wavefront中多个线程之间需要获取的光源数据有所区别的区域，具体一点则是有5个以上的元素（光源、贴花等）并不是每个线程都需要用到（即是局部共享）。这个覆盖范围也不小，
 
-![](https://gerigory.github.io/assets/img/Siggraph-2016-the-devil-is-in-the-details/幻灯片31.PNG)
+![](https://gerigory.github.io/assets/img/Siggraph/2016/Siggraph-2016-the-devil-is-in-the-details/幻灯片31.PNG)
 
 基于前面的观察有上述的结论，即大部分情况下，一个wavefront中各个线程对应的元素基本上都是共享的，因此：
 
 1. 以线程为单位来访问cell数据就会有点浪费（类似于逻辑是应该放VS还是PS）
 2. 可以考虑将这部分共享的数据抽取出来，方便通过标量计算操作获取（以降低VGPR压力？）
 
-![](https://gerigory.github.io/assets/img/Siggraph-2016-the-devil-is-in-the-details/幻灯片32.PNG)
+![](https://gerigory.github.io/assets/img/Siggraph/2016/Siggraph-2016-the-devil-is-in-the-details/幻灯片32.PNG)
 
 首先，先回顾一下设置。Cluster的每个Cell都存储了一个灯光和贴花偏移的排序列表。
 
@@ -322,7 +322,7 @@ GCN提供了一个叫做scalar unit的特性，这个特性可以用于在一个
 
 通过这种方式，可以保证所有元素都能按顺序处理一次（不会带来浪费吗？难道获取数据的加速能够掩盖这部分损失？）。
 
-![](https://gerigory.github.io/assets/img/Siggraph-2016-the-devil-is-in-the-details/幻灯片33.PNG)
+![](https://gerigory.github.io/assets/img/Siggraph/2016/Siggraph-2016-the-devil-is-in-the-details/幻灯片33.PNG)
 
 针对前面的实现框架，这里还打了两个补丁：
 
@@ -331,7 +331,7 @@ GCN提供了一个叫做scalar unit的特性，这个特性可以用于在一个
 
 上图给了具体的性能优化表现，可以从原始的8.9毫秒的消耗降低到6.2ms（同时还能够减少寄存器的占用，提升可并行执行的wavefront的数目）。
 
-![](https://gerigory.github.io/assets/img/Siggraph-2016-the-devil-is-in-the-details/幻灯片34.PNG)
+![](https://gerigory.github.io/assets/img/Siggraph/2016/Siggraph-2016-the-devil-is-in-the-details/幻灯片34.PNG)
 
 这里还做了一个动态调整分辨率的计算策略，会根据GPU的负载来调整以保障流畅性：
 
@@ -339,7 +339,7 @@ GCN提供了一个叫做scalar unit的特性，这个特性可以用于在一个
 2. TAA可以从不同分辨率上拿到数据，效果不咋受影响
 3. 通过Async Compute来完成上采样
 
-![](https://gerigory.github.io/assets/img/Siggraph-2016-the-devil-is-in-the-details/幻灯片35.PNG)
+![](https://gerigory.github.io/assets/img/Siggraph/2016/Siggraph-2016-the-devil-is-in-the-details/幻灯片35.PNG)
 
 基于如下的两个观察：
 
@@ -353,7 +353,7 @@ GCN提供了一个叫做scalar unit的特性，这个特性可以用于在一个
 3. 上述第N帧的compute queue的计算逻辑将会与第N+1帧的shadow/depth/opaque绘制逻辑并行
 4. 如果可以的话，还可以通过compute queue完成present（？）以减少延迟
 
-![](https://gerigory.github.io/assets/img/Siggraph-2016-the-devil-is-in-the-details/幻灯片36.PNG)
+![](https://gerigory.github.io/assets/img/Siggraph/2016/Siggraph-2016-the-devil-is-in-the-details/幻灯片36.PNG)
 
 最后给一些性能调优的建议：
 
@@ -379,7 +379,7 @@ GCN提供了一个叫做scalar unit的特性，这个特性可以用于在一个
 > 2. **提高缓存利用率**：通过延迟分配，可以更智能地管理缓存，提升命中率和效率。
 > 3. **灵活性**：在更动态的场景下，延迟分配能够更好应对不断变化的数据需求。
 
-![](https://gerigory.github.io/assets/img/Siggraph-2016-the-devil-is-in-the-details/幻灯片37.PNG)
+![](https://gerigory.github.io/assets/img/Siggraph/2016/Siggraph-2016-the-devil-is-in-the-details/幻灯片37.PNG)
 
  最后介绍一下寄存器分配的约束：
 
@@ -390,9 +390,9 @@ GCN提供了一个叫做scalar unit的特性，这个特性可以用于在一个
    1. 不透明 PS 分配了 56 个 VGPR， VS 分配了 24 个 VGPR：在整体上可以有更多的wavefront并行执行
    2. 相对而言，如果激进的分配 64个VGPR 给PS，当我们有 4 个 PS wavefront在执行的时候，就没有办法并行运行其他的wavefront了
 
-![](https://gerigory.github.io/assets/img/Siggraph-2016-the-devil-is-in-the-details/幻灯片38.PNG)
+![](https://gerigory.github.io/assets/img/Siggraph/2016/Siggraph-2016-the-devil-is-in-the-details/幻灯片38.PNG)
 
-![](https://gerigory.github.io/assets/img/Siggraph-2016-the-devil-is-in-the-details/幻灯片39.PNG)
+![](https://gerigory.github.io/assets/img/Siggraph/2016/Siggraph-2016-the-devil-is-in-the-details/幻灯片39.PNG)
 
 还有一些其他待优化的点，项目侧：
 
@@ -409,21 +409,21 @@ GCN提供了一个叫做scalar unit的特性，这个特性可以用于在一个
 - Sampler Rect 
 - Better filtering
 
-![](https://gerigory.github.io/assets/img/Siggraph-2016-the-devil-is-in-the-details/幻灯片40.PNG)
+![](https://gerigory.github.io/assets/img/Siggraph/2016/Siggraph-2016-the-devil-is-in-the-details/幻灯片40.PNG)
 
-![](https://gerigory.github.io/assets/img/Siggraph-2016-the-devil-is-in-the-details/幻灯片41.PNG)
+![](https://gerigory.github.io/assets/img/Siggraph/2016/Siggraph-2016-the-devil-is-in-the-details/幻灯片41.PNG)
 
-![](https://gerigory.github.io/assets/img/Siggraph-2016-the-devil-is-in-the-details/幻灯片42.PNG)
+![](https://gerigory.github.io/assets/img/Siggraph/2016/Siggraph-2016-the-devil-is-in-the-details/幻灯片42.PNG)
 
-![](https://gerigory.github.io/assets/img/Siggraph-2016-the-devil-is-in-the-details/幻灯片43.PNG)
+![](https://gerigory.github.io/assets/img/Siggraph/2016/Siggraph-2016-the-devil-is-in-the-details/幻灯片43.PNG)
 
-![](https://gerigory.github.io/assets/img/Siggraph-2016-the-devil-is-in-the-details/幻灯片44.PNG)
+![](https://gerigory.github.io/assets/img/Siggraph/2016/Siggraph-2016-the-devil-is-in-the-details/幻灯片44.PNG)
 
-![](https://gerigory.github.io/assets/img/Siggraph-2016-the-devil-is-in-the-details/幻灯片45.PNG)
+![](https://gerigory.github.io/assets/img/Siggraph/2016/Siggraph-2016-the-devil-is-in-the-details/幻灯片45.PNG)
 
 cubemap的分辨率是128，BC6H
 
-![](https://gerigory.github.io/assets/img/Siggraph-2016-the-devil-is-in-the-details/幻灯片46.PNG)
+![](https://gerigory.github.io/assets/img/Siggraph/2016/Siggraph-2016-the-devil-is-in-the-details/幻灯片46.PNG)
 
 期望结合两种管线的优点：
 

@@ -2,7 +2,7 @@
 layout: post
 title: 【Siggraph 2012】Local Image-based Lighting With Parallax-corrected Cubemap
 date: 2024-10-15
-img: Local-Image-based-Lighting-With-Parallax-corrected-Cubemap/幻灯片2.PNG # Add image post (optional)
+img: Siggraph/2012/Local-Image-based-Lighting-With-Parallax-corrected-Cubemap/幻灯片2.PNG # Add image post (optional)
 fig-caption: # Add figcaption (optional)
 tags: [Cubemap, Reflection, Siggraph, 2012]
 description: 本文分享的是基于cubemap的反射效果的优化方案
@@ -31,9 +31,9 @@ IBL方案主要有两个应用场景：
 1. 近景光照模拟
 2. 远景光照模拟
 
-![](https://gerigory.github.io/assets/img/Local-Image-based-Lighting-With-Parallax-corrected-Cubemap/幻灯片3.PNG)
+![](https://gerigory.github.io/assets/img/Siggraph/2012/Local-Image-based-Lighting-With-Parallax-corrected-Cubemap/幻灯片3.PNG)
 
-![](https://gerigory.github.io/assets/img/Local-Image-based-Lighting-With-Parallax-corrected-Cubemap/幻灯片4.PNG)
+![](https://gerigory.github.io/assets/img/Siggraph/2012/Local-Image-based-Lighting-With-Parallax-corrected-Cubemap/幻灯片4.PNG)
 
 先来看看远景部分。
 
@@ -41,7 +41,7 @@ IBL方案主要有两个应用场景：
 
 在实际运行的时候，会将地图分割成一个个的sector，每个sector关联一张cubemap，在两个相邻的sector过渡的时候，会需要对两张cubemap做采样并混合，这也就是为什么这种方法被称之为Camera-based（即什么时候取用哪张cubemap是由相机位置决定，而非物件本身决定）的由来。
 
-![](https://gerigory.github.io/assets/img/Local-Image-based-Lighting-With-Parallax-corrected-Cubemap/幻灯片5.PNG)
+![](https://gerigory.github.io/assets/img/Siggraph/2012/Local-Image-based-Lighting-With-Parallax-corrected-Cubemap/幻灯片5.PNG)
 
 再来看看局部照明IBL。
 
@@ -54,7 +54,7 @@ IBL方案主要有两个应用场景：
 1. 由于局部性的作用，相邻的两个物体可能会被分配给不同的两个cubemap，造成效果不连贯
 2. 因为捕获的数据偏局部，在相机位置跟捕获点不重合的时候，就会存在视差问题
 
-![](https://gerigory.github.io/assets/img/Local-Image-based-Lighting-With-Parallax-corrected-Cubemap/幻灯片6.PNG)
+![](https://gerigory.github.io/assets/img/Siggraph/2012/Local-Image-based-Lighting-With-Parallax-corrected-Cubemap/幻灯片6.PNG)
 
 这里对问题做了进一步解释。
 
@@ -64,9 +64,9 @@ IBL方案主要有两个应用场景：
 
 右图展示的是视差问题，这里有个[视频](https://www.youtube.com/watch?v=ZH6s1hbwoQQ)。
 
-![](https://gerigory.github.io/assets/img/Local-Image-based-Lighting-With-Parallax-corrected-Cubemap/幻灯片7.PNG)
+![](https://gerigory.github.io/assets/img/Siggraph/2012/Local-Image-based-Lighting-With-Parallax-corrected-Cubemap/幻灯片7.PNG)
 
-![](https://gerigory.github.io/assets/img/Local-Image-based-Lighting-With-Parallax-corrected-Cubemap/幻灯片8.PNG)
+![](https://gerigory.github.io/assets/img/Siggraph/2012/Local-Image-based-Lighting-With-Parallax-corrected-Cubemap/幻灯片8.PNG)
 
 本文给出的方案被称之为POI-based方法，其基本思路为：
 
@@ -76,20 +76,20 @@ IBL方案主要有两个应用场景：
 
 应用了这个方案之后，前面的接缝问题就都能解决了。
 
-![](https://gerigory.github.io/assets/img/Local-Image-based-Lighting-With-Parallax-corrected-Cubemap/幻灯片9.PNG)
+![](https://gerigory.github.io/assets/img/Siggraph/2012/Local-Image-based-Lighting-With-Parallax-corrected-Cubemap/幻灯片9.PNG)
 
 基于上述混合的方案之后，前面提到的接缝问题就没了，如这里展示的一样。不过还有两个问题需要处理：
 
 1. 视差问题依然存在
 2. 远景部分的反射精度有所下降
 
-![](https://gerigory.github.io/assets/img/Local-Image-based-Lighting-With-Parallax-corrected-Cubemap/幻灯片10.PNG)
+![](https://gerigory.github.io/assets/img/Siggraph/2012/Local-Image-based-Lighting-With-Parallax-corrected-Cubemap/幻灯片10.PNG)
 
-![](https://gerigory.github.io/assets/img/Local-Image-based-Lighting-With-Parallax-corrected-Cubemap/幻灯片11.PNG)
+![](https://gerigory.github.io/assets/img/Siggraph/2012/Local-Image-based-Lighting-With-Parallax-corrected-Cubemap/幻灯片11.PNG)
 
 左图是存在视差问题的效果截图，右边是期望达成的效果
 
-![](https://gerigory.github.io/assets/img/Local-Image-based-Lighting-With-Parallax-corrected-Cubemap/幻灯片12.PNG)
+![](https://gerigory.github.io/assets/img/Siggraph/2012/Local-Image-based-Lighting-With-Parallax-corrected-Cubemap/幻灯片12.PNG)
 
 先来看下右边的示意图：
 
@@ -108,7 +108,7 @@ IBL方案主要有两个应用场景：
 
 如果没有指定box，可以考虑使用无穷远作为box，这样就可以把天光跟局部环境光反射统一起来了
 
-![](https://gerigory.github.io/assets/img/Local-Image-based-Lighting-With-Parallax-corrected-Cubemap/幻灯片13.PNG)
+![](https://gerigory.github.io/assets/img/Siggraph/2012/Local-Image-based-Lighting-With-Parallax-corrected-Cubemap/幻灯片13.PNG)
 
 上述方案效果很好，唯一的问题是计算消耗比较高，并且随着需要混合的cubemap数目增多，这个消耗还要在这个基数上翻倍。
 
@@ -118,21 +118,21 @@ IBL方案主要有两个应用场景：
 
 经过这个优化后，PS3上单个cubemap的校正指令数就从21下降到8，同时值得一提的事Tri Ace research也用了类似的方案。
 
-![](https://gerigory.github.io/assets/img/Local-Image-based-Lighting-With-Parallax-corrected-Cubemap/幻灯片14.PNG)
+![](https://gerigory.github.io/assets/img/Siggraph/2012/Local-Image-based-Lighting-With-Parallax-corrected-Cubemap/幻灯片14.PNG)
 
 这里给出了简化方案的效果，左侧是没做修正的，右侧是修正完成的
 
-![](https://gerigory.github.io/assets/img/Local-Image-based-Lighting-With-Parallax-corrected-Cubemap/幻灯片15.PNG)
+![](https://gerigory.github.io/assets/img/Siggraph/2012/Local-Image-based-Lighting-With-Parallax-corrected-Cubemap/幻灯片15.PNG)
 
 前面说到了如果需要美术同学手动调校每个物件上的系数K，效率会比较低，这里的解决方案是将局部cubemap的采样处理独立出来，而非集成到物体本身的绘制shader中，而采用这种方式，就需要一个新的视差校正方案（因为在这个地方，就不知道像素的位置？）
 
-![](https://gerigory.github.io/assets/img/Local-Image-based-Lighting-With-Parallax-corrected-Cubemap/幻灯片16.PNG)
+![](https://gerigory.github.io/assets/img/Siggraph/2012/Local-Image-based-Lighting-With-Parallax-corrected-Cubemap/幻灯片16.PNG)
 
-![](https://gerigory.github.io/assets/img/Local-Image-based-Lighting-With-Parallax-corrected-Cubemap/幻灯片17.PNG)
+![](https://gerigory.github.io/assets/img/Siggraph/2012/Local-Image-based-Lighting-With-Parallax-corrected-Cubemap/幻灯片17.PNG)
 
 不用反射点的坐标，这里添加了一个反射平面，基于反射平面，可以拿到反射向量，同样的，该向量会与box volume相交，之后拿到该点在cubemap上的数据即可。
 
-![](https://gerigory.github.io/assets/img/Local-Image-based-Lighting-With-Parallax-corrected-Cubemap/幻灯片18.PNG)
+![](https://gerigory.github.io/assets/img/Siggraph/2012/Local-Image-based-Lighting-With-Parallax-corrected-Cubemap/幻灯片18.PNG)
 
 大概解释一下伪代码的实现逻辑：
 
@@ -152,39 +152,39 @@ IBL方案主要有两个应用场景：
 
    1. 从后面的介绍来看，是对cubemap上的每个texel做遍历来实现的
 
-![](https://gerigory.github.io/assets/img/Local-Image-based-Lighting-With-Parallax-corrected-Cubemap/幻灯片19.PNG)
+![](https://gerigory.github.io/assets/img/Siggraph/2012/Local-Image-based-Lighting-With-Parallax-corrected-Cubemap/幻灯片19.PNG)
 
 这里给了一个顶视图效果，一条走廊由三个cubemap覆盖，在重叠区域还设置了对应cubemap的混合权重
 
-![](https://gerigory.github.io/assets/img/Local-Image-based-Lighting-With-Parallax-corrected-Cubemap/幻灯片20.PNG)
+![](https://gerigory.github.io/assets/img/Siggraph/2012/Local-Image-based-Lighting-With-Parallax-corrected-Cubemap/幻灯片20.PNG)
 
 这里给了个视频展示了对应的效果
 
-![](https://gerigory.github.io/assets/img/Local-Image-based-Lighting-With-Parallax-corrected-Cubemap/幻灯片21.PNG)
+![](https://gerigory.github.io/assets/img/Siggraph/2012/Local-Image-based-Lighting-With-Parallax-corrected-Cubemap/幻灯片21.PNG)
 
 对于光滑表面而言，由于法线贴图的存在，我们的反射射线有可能会采样到反射平面以下的颜色数据（反射结果），也就是说，如果不做特殊处理的话，沿着此前的公式，我们的反射相机的命中点就会出错，不能正确反映反射结果。
 
 对于这个问题，我们只需要确保反射相机也处于unit box之中即可，即unit box需要将反射相机也包裹进去（PPT中有一个较为明白的效果对比）
 
-![](https://gerigory.github.io/assets/img/Local-Image-based-Lighting-With-Parallax-corrected-Cubemap/幻灯片22.PNG)
+![](https://gerigory.github.io/assets/img/Siggraph/2012/Local-Image-based-Lighting-With-Parallax-corrected-Cubemap/幻灯片22.PNG)
 
 前面说过，当前的方法是在平面反射的假设上实现的，当光滑表面上带有法线贴图的时候，法线偏转就会打破这个假设，从而导致效果的失真，不过由于人眼对于细节的轻微变化感知不是太强烈，因此大部分情况下也不是太大的问题。
 
-![](https://gerigory.github.io/assets/img/Local-Image-based-Lighting-With-Parallax-corrected-Cubemap/幻灯片23.PNG)
+![](https://gerigory.github.io/assets/img/Siggraph/2012/Local-Image-based-Lighting-With-Parallax-corrected-Cubemap/幻灯片23.PNG)
 
 这里对方法做了一点改进，之前的策略是对cubemap上的texel做遍历来实现投影的视察校正的，这里改成将cubemap投影到一个几何体proxy上，比如一个box或者一个sphere，之后对这个几何体进行绘制，在PS中完成相关计算。
 
 基于这种思路，就可以不用局限在box或者sphere上，而是任意的凸多面体，不过这里需要注意，并不是所有的几何体都是可用的，部分几何体形状可能会导致其他的瑕疵。
 
-![](https://gerigory.github.io/assets/img/Local-Image-based-Lighting-With-Parallax-corrected-Cubemap/幻灯片24.PNG)
+![](https://gerigory.github.io/assets/img/Siggraph/2012/Local-Image-based-Lighting-With-Parallax-corrected-Cubemap/幻灯片24.PNG)
 
 这里展示了使用不同的凸多面体会导致效果的差异，比如这个室内的建筑的墙体布局本身不是box形状，而是类似一个房子的形状，这时候使用box作为渲染几何体跟使用贴合墙面形状的几何体作为渲染几何体，得到的效果是不同的，后者会具有更好的精度。
 
-![](https://gerigory.github.io/assets/img/Local-Image-based-Lighting-With-Parallax-corrected-Cubemap/幻灯片25.PNG)
+![](https://gerigory.github.io/assets/img/Siggraph/2012/Local-Image-based-Lighting-With-Parallax-corrected-Cubemap/幻灯片25.PNG)
 
 这里展示了如何将cubemap贴到任意凸多面体上的实现代码，包括C++层跟Shader层，经过这个处理后，就能够基于凸多面体完成对应表面的反射效果（或者可以将这两部分合二为一）。
 
-![](https://gerigory.github.io/assets/img/Local-Image-based-Lighting-With-Parallax-corrected-Cubemap/幻灯片26.PNG)
+![](https://gerigory.github.io/assets/img/Siggraph/2012/Local-Image-based-Lighting-With-Parallax-corrected-Cubemap/幻灯片26.PNG)
 
 这里对前面的多种方法进行了总结：
 
@@ -193,9 +193,9 @@ IBL方案主要有两个应用场景：
 3. 上图展示了三种方法的时间消耗，总的来说，每增加一个cubemap，在PS3上大约需要新增0.08的消耗，另外，这个消耗跟需要计算反射的像素的占比有关，右下角的表格给出了屏占比25%跟75%的像素需要反射计算时的消耗比对
 4. 总的来说，对于平面物件而言，可以选择第一种方法，成本低，其他物件则建议使用后两种方案
 
-![](https://gerigory.github.io/assets/img/Local-Image-based-Lighting-With-Parallax-corrected-Cubemap/幻灯片27.PNG)
+![](https://gerigory.github.io/assets/img/Siggraph/2012/Local-Image-based-Lighting-With-Parallax-corrected-Cubemap/幻灯片27.PNG)
 
-![](https://gerigory.github.io/assets/img/Local-Image-based-Lighting-With-Parallax-corrected-Cubemap/幻灯片28.PNG)
+![](https://gerigory.github.io/assets/img/Siggraph/2012/Local-Image-based-Lighting-With-Parallax-corrected-Cubemap/幻灯片28.PNG)
 
 这个方案的一个问题是，随着到POI距离的增加，光照结果的准确性也会急剧下降，这里提供了几种解决的策略：
 
@@ -203,27 +203,27 @@ IBL方案主要有两个应用场景：
 2. 随着距离的拉远，逐渐fade out环境光反射的占比
 3. 通过在有瑕疵的区域摆放物件来掩盖
 
-![](https://gerigory.github.io/assets/img/Local-Image-based-Lighting-With-Parallax-corrected-Cubemap/幻灯片29.PNG)
+![](https://gerigory.github.io/assets/img/Siggraph/2012/Local-Image-based-Lighting-With-Parallax-corrected-Cubemap/幻灯片29.PNG)
 
-![](https://gerigory.github.io/assets/img/Local-Image-based-Lighting-With-Parallax-corrected-Cubemap/幻灯片30.PNG)
+![](https://gerigory.github.io/assets/img/Siggraph/2012/Local-Image-based-Lighting-With-Parallax-corrected-Cubemap/幻灯片30.PNG)
 
 总结
 
-![](https://gerigory.github.io/assets/img/Local-Image-based-Lighting-With-Parallax-corrected-Cubemap/幻灯片31.PNG)
+![](https://gerigory.github.io/assets/img/Siggraph/2012/Local-Image-based-Lighting-With-Parallax-corrected-Cubemap/幻灯片31.PNG)
 
 还有一些提升空间，这里会考虑开发一些相配套的工具来应对，可以在GPU Pro 4中找到相关介绍。
 
-![](https://gerigory.github.io/assets/img/Local-Image-based-Lighting-With-Parallax-corrected-Cubemap/幻灯片32.PNG)
+![](https://gerigory.github.io/assets/img/Siggraph/2012/Local-Image-based-Lighting-With-Parallax-corrected-Cubemap/幻灯片32.PNG)
 
-![](https://gerigory.github.io/assets/img/Local-Image-based-Lighting-With-Parallax-corrected-Cubemap/幻灯片33.PNG)
+![](https://gerigory.github.io/assets/img/Siggraph/2012/Local-Image-based-Lighting-With-Parallax-corrected-Cubemap/幻灯片33.PNG)
 
-![](https://gerigory.github.io/assets/img/Local-Image-based-Lighting-With-Parallax-corrected-Cubemap/幻灯片34.PNG)
+![](https://gerigory.github.io/assets/img/Siggraph/2012/Local-Image-based-Lighting-With-Parallax-corrected-Cubemap/幻灯片34.PNG)
 
-![](https://gerigory.github.io/assets/img/Local-Image-based-Lighting-With-Parallax-corrected-Cubemap/幻灯片35.PNG)
+![](https://gerigory.github.io/assets/img/Siggraph/2012/Local-Image-based-Lighting-With-Parallax-corrected-Cubemap/幻灯片35.PNG)
 
-![](https://gerigory.github.io/assets/img/Local-Image-based-Lighting-With-Parallax-corrected-Cubemap/幻灯片36.PNG)
+![](https://gerigory.github.io/assets/img/Siggraph/2012/Local-Image-based-Lighting-With-Parallax-corrected-Cubemap/幻灯片36.PNG)
 
-![](https://gerigory.github.io/assets/img/Local-Image-based-Lighting-With-Parallax-corrected-Cubemap/幻灯片37.PNG)
+![](https://gerigory.github.io/assets/img/Siggraph/2012/Local-Image-based-Lighting-With-Parallax-corrected-Cubemap/幻灯片37.PNG)
 
 前面幻灯片中提到了POI，这里主要指的是反射计算所关心的区域：
 
@@ -231,7 +231,7 @@ IBL方案主要有两个应用场景：
 2. 运行时可以选取角色或者相机位置，作者开发的作品是TPS，所以选择角色作为POI效果会更好
 3. 也可以根据需要选择其他策略
 
-![](https://gerigory.github.io/assets/img/Local-Image-based-Lighting-With-Parallax-corrected-Cubemap/幻灯片38.PNG)
+![](https://gerigory.github.io/assets/img/Siggraph/2012/Local-Image-based-Lighting-With-Parallax-corrected-Cubemap/幻灯片38.PNG)
 
 当场景摆放了多个cubemap的时候，需要给出一个计算混合策略：
 
@@ -240,29 +240,29 @@ IBL方案主要有两个应用场景：
 3. influence factor可以提供若干计算机制，比如基于到POI的距离来计算
 4. 为了快速完成上述计算，通常还需要设计一套加速结构，比如使用八叉树来对cubemap进行管理与查询
 
-![](https://gerigory.github.io/assets/img/Local-Image-based-Lighting-With-Parallax-corrected-Cubemap/幻灯片39.PNG)
+![](https://gerigory.github.io/assets/img/Siggraph/2012/Local-Image-based-Lighting-With-Parallax-corrected-Cubemap/幻灯片39.PNG)
 
 这里介绍了多个参与计算的cubemap的数据是如何混合的，通常对于一个cubemap而言，其圆心位置的权重是1，圆弧是0，中间会有一个fade的过程。
 
-![](https://gerigory.github.io/assets/img/Local-Image-based-Lighting-With-Parallax-corrected-Cubemap/幻灯片40.PNG)
+![](https://gerigory.github.io/assets/img/Siggraph/2012/Local-Image-based-Lighting-With-Parallax-corrected-Cubemap/幻灯片40.PNG)
 
 这里给出具体计算的伪代码
 
-![](https://gerigory.github.io/assets/img/Local-Image-based-Lighting-With-Parallax-corrected-Cubemap/幻灯片41.PNG)
+![](https://gerigory.github.io/assets/img/Siggraph/2012/Local-Image-based-Lighting-With-Parallax-corrected-Cubemap/幻灯片41.PNG)
 
 这是几种混合情况下的混合结果。
 
-![](https://gerigory.github.io/assets/img/Local-Image-based-Lighting-With-Parallax-corrected-Cubemap/幻灯片42.PNG)
+![](https://gerigory.github.io/assets/img/Siggraph/2012/Local-Image-based-Lighting-With-Parallax-corrected-Cubemap/幻灯片42.PNG)
 
 更多混合细节
 
-![](https://gerigory.github.io/assets/img/Local-Image-based-Lighting-With-Parallax-corrected-Cubemap/幻灯片43.PNG)
+![](https://gerigory.github.io/assets/img/Siggraph/2012/Local-Image-based-Lighting-With-Parallax-corrected-Cubemap/幻灯片43.PNG)
 
 这里给出基于AABB策略的视察校正逻辑伪代码，跟前面基于反射平面的计算逻辑基本上重合
 
-![](https://gerigory.github.io/assets/img/Local-Image-based-Lighting-With-Parallax-corrected-Cubemap/幻灯片44.PNG)
+![](https://gerigory.github.io/assets/img/Siggraph/2012/Local-Image-based-Lighting-With-Parallax-corrected-Cubemap/幻灯片44.PNG)
 
-![](https://gerigory.github.io/assets/img/Local-Image-based-Lighting-With-Parallax-corrected-Cubemap/幻灯片45.PNG)
+![](https://gerigory.github.io/assets/img/Siggraph/2012/Local-Image-based-Lighting-With-Parallax-corrected-Cubemap/幻灯片45.PNG)
 
 这个幻灯片解释了本算法引入的一些误差。
 
