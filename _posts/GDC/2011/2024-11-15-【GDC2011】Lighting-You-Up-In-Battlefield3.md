@@ -5,7 +5,7 @@ date: 2024-11-15
 img: GDC/2011/Lighting-You-Up-In-Battlefield3/幻灯片1.PNG # Add image post (optional)
 fig-caption: # Add figcaption (optional)
 tags: [Battlefield, Rendering, lighting, GDC, 2011]
-description: 本文分享的是战地3在GDC2011分享的一些光照相关的技巧
+description: 本文分享的是战地3在GDC 2011上介绍到的一些光照相关的技巧
 ---
 今天介绍的是战地3在GDC2011分享的一些光照的技术，照例，这里对工作内容做一个总结：
 
