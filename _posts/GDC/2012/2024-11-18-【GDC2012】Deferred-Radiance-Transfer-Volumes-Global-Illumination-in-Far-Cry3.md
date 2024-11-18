@@ -189,4 +189,4 @@ description: 本文分享的是Far Cry 3在GDC 2012上介绍到的全局光方�
 
 ## 参考
 
-[[1]. Siggraph 2016 talk : The devil is in the details](https://advances.realtimerendering.com/s2016/Siggraph2016_idTech6.pdf)
+[[1]. 【GDC 2012】Deferred Radiance Transfer Volumes - Global Illumination in Far Cry 3](https://fileadmin.cs.lth.se/cs/Education/EDAN35/lectures/L10b-Nikolay_DRTV.pdf)
