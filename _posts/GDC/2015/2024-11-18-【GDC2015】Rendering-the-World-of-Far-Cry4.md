@@ -1,210 +1,262 @@
 ---
 layout: post
-title: 【GDC 2015】Lighting You Up In attlefield 3
-date: 2024-11-15
-img: GDC/2011/Lighting-You-Up-In-Battlefield3/幻灯片1.PNG # Add image post (optional)
+title: 【GDC 2015】Rendering the World of Far Cry 4
+date: 2024-11-18
+img: GDC/2015/Rendering-the-World-of-Far-Cry4/image1.jpg # Add image post (optional)
 fig-caption: # Add figcaption (optional)
-tags: [Battlefield, Rendering, lighting, GDC, 2011]
+tags: [Far Cry 4, Rendering, lighting, GDC, 2015]
 description: 本文分享的是战地3在GDC 2011上介绍到的一些光照相关的技巧
+
 ---
+
 今天介绍的是战地3在GDC2011分享的一些光照的技术，照例，这里对工作内容做一个总结：
 
 1. 
 
 ---
 
-![](https://gerigory.github.io/assets/img/GDC/2011/Lighting-You-Up-In-Battlefield3/幻灯片2.PNG)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image2.jpg)
 
 
 
-![](https://gerigory.github.io/assets/img/GDC/2011/Lighting-You-Up-In-Battlefield3/幻灯片3.PNG)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image3.jpg)
 
 
 
-![](https://gerigory.github.io/assets/img/GDC/2011/Lighting-You-Up-In-Battlefield3/幻灯片4.PNG)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image4.jpg)
 
 2. 
 
-![](https://gerigory.github.io/assets/img/GDC/2011/Lighting-You-Up-In-Battlefield3/幻灯片5.PNG)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image5.jpg)
 
 1. 2. 
 
-![](https://gerigory.github.io/assets/img/GDC/2011/Lighting-You-Up-In-Battlefield3/幻灯片6.PNG)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image6.jpg)
 
 2. 
 
-![](https://gerigory.github.io/assets/img/GDC/2011/Lighting-You-Up-In-Battlefield3/幻灯片7.PNG)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image7.jpg)
 
 1. 1. 
 
-![](https://gerigory.github.io/assets/img/GDC/2011/Lighting-You-Up-In-Battlefield3/幻灯片8.PNG)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image8.jpg)
 
 
 
-![](https://gerigory.github.io/assets/img/GDC/2011/Lighting-You-Up-In-Battlefield3/幻灯片9.PNG)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image9.jpg)
 
 1. 6. 
 
-![](https://gerigory.github.io/assets/img/GDC/2011/Lighting-You-Up-In-Battlefield3/幻灯片10.PNG)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image10.jpg)
 
 5. 
 
-![](https://gerigory.github.io/assets/img/GDC/2011/Lighting-You-Up-In-Battlefield3/幻灯片11.PNG)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image11.jpg)
 
 - 
 
-![](https://gerigory.github.io/assets/img/GDC/2011/Lighting-You-Up-In-Battlefield3/幻灯片12.PNG)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image12.jpg)
 
 4. 
 
-![](https://gerigory.github.io/assets/img/GDC/2011/Lighting-You-Up-In-Battlefield3/幻灯片13.PNG)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image13.jpg)
 
-![](https://gerigory.github.io/assets/img/GDC/2011/Lighting-You-Up-In-Battlefield3/幻灯片14.PNG)
-
-
-
-![](https://gerigory.github.io/assets/img/GDC/2011/Lighting-You-Up-In-Battlefield3/幻灯片15.PNG)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image14.jpg)
 
 
 
-![](https://gerigory.github.io/assets/img/GDC/2011/Lighting-You-Up-In-Battlefield3/幻灯片16.PNG)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image15.jpg)
+
+
+
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image16.jpg)
 
 1. 3. 
 
-![](https://gerigory.github.io/assets/img/GDC/2011/Lighting-You-Up-In-Battlefield3/幻灯片17.PNG)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image17.jpg)
 
 2. 
 
-![](https://gerigory.github.io/assets/img/GDC/2011/Lighting-You-Up-In-Battlefield3/幻灯片18.PNG)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image18.jpg)
 
-![](https://gerigory.github.io/assets/img/GDC/2011/Lighting-You-Up-In-Battlefield3/幻灯片19.PNG)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image19.jpg)
 
 1. 
 
-![](https://gerigory.github.io/assets/img/GDC/2011/Lighting-You-Up-In-Battlefield3/幻灯片20.PNG)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image20.jpg)
 
-![](https://gerigory.github.io/assets/img/GDC/2011/Lighting-You-Up-In-Battlefield3/幻灯片21.PNG)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image21.jpg)
 
 1. 2. 
 
-![](https://gerigory.github.io/assets/img/GDC/2011/Lighting-You-Up-In-Battlefield3/幻灯片22.PNG)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image22.jpg)
 
 1. 1. 
 
-![](https://gerigory.github.io/assets/img/GDC/2011/Lighting-You-Up-In-Battlefield3/幻灯片23.PNG)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image23.jpg)
 
 
 
-![](https://gerigory.github.io/assets/img/GDC/2011/Lighting-You-Up-In-Battlefield3/幻灯片24.PNG)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image24.jpg)
 
-![](https://gerigory.github.io/assets/img/GDC/2011/Lighting-You-Up-In-Battlefield3/幻灯片25.PNG)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image25.jpg)
 
 
 
-![](https://gerigory.github.io/assets/img/GDC/2011/Lighting-You-Up-In-Battlefield3/幻灯片26.PNG)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image26.jpg)
 
 - 
 
-![](https://gerigory.github.io/assets/img/GDC/2011/Lighting-You-Up-In-Battlefield3/幻灯片27.PNG)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image27.jpg)
 
-![](https://gerigory.github.io/assets/img/GDC/2011/Lighting-You-Up-In-Battlefield3/幻灯片28.PNG)
-
-
-
-![](https://gerigory.github.io/assets/img/GDC/2011/Lighting-You-Up-In-Battlefield3/幻灯片29.PNG)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image28.jpg)
 
 
 
-![](https://gerigory.github.io/assets/img/GDC/2011/Lighting-You-Up-In-Battlefield3/幻灯片30.PNG)
-
-3. 
-
-![](https://gerigory.github.io/assets/img/GDC/2011/Lighting-You-Up-In-Battlefield3/幻灯片31.PNG)
-
-![](https://gerigory.github.io/assets/img/GDC/2011/Lighting-You-Up-In-Battlefield3/幻灯片32.PNG)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image29.jpg)
 
 
 
-![](https://gerigory.github.io/assets/img/GDC/2011/Lighting-You-Up-In-Battlefield3/幻灯片33.PNG)
-
-
-
-![](https://gerigory.github.io/assets/img/GDC/2011/Lighting-You-Up-In-Battlefield3/幻灯片34.PNG)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image30.jpg)
 
 3. 
 
-![](https://gerigory.github.io/assets/img/GDC/2011/Lighting-You-Up-In-Battlefield3/幻灯片35.PNG)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image31.jpg)
+
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image32.jpg)
+
+
+
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image33.jpg)
+
+
+
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image34.jpg)
+
+3. 
+
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image35.jpg)
 
 4. 
 
-![](https://gerigory.github.io/assets/img/GDC/2011/Lighting-You-Up-In-Battlefield3/幻灯片36.PNG)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image36.jpg)
 
 
 
-![](https://gerigory.github.io/assets/img/GDC/2011/Lighting-You-Up-In-Battlefield3/幻灯片37.PNG)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image37.jpg)
 
  
 
-![](https://gerigory.github.io/assets/img/GDC/2011/Lighting-You-Up-In-Battlefield3/幻灯片38.PNG)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image38.jpg)
 
-![](https://gerigory.github.io/assets/img/GDC/2011/Lighting-You-Up-In-Battlefield3/幻灯片39.PNG)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image39.jpg)
 
 - 
 
-![](https://gerigory.github.io/assets/img/GDC/2011/Lighting-You-Up-In-Battlefield3/幻灯片40.PNG)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image40.jpg)
 
-![](https://gerigory.github.io/assets/img/GDC/2011/Lighting-You-Up-In-Battlefield3/幻灯片41.PNG)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image41.jpg)
 
-![](https://gerigory.github.io/assets/img/GDC/2011/Lighting-You-Up-In-Battlefield3/幻灯片42.PNG)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image42.jpg)
 
-![](https://gerigory.github.io/assets/img/GDC/2011/Lighting-You-Up-In-Battlefield3/幻灯片43.PNG)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image43.jpg)
 
-![](https://gerigory.github.io/assets/img/GDC/2011/Lighting-You-Up-In-Battlefield3/幻灯片44.PNG)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image44.jpg)
 
-![](https://gerigory.github.io/assets/img/GDC/2011/Lighting-You-Up-In-Battlefield3/幻灯片45.PNG)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image45.jpg)
 
 
 
-![](https://gerigory.github.io/assets/img/GDC/2011/Lighting-You-Up-In-Battlefield3/幻灯片46.PNG)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image46.jpg)
 
-![](https://gerigory.github.io/assets/img/GDC/2011/Lighting-You-Up-In-Battlefield3/幻灯片47.PNG)
-![](https://gerigory.github.io/assets/img/GDC/2011/Lighting-You-Up-In-Battlefield3/幻灯片48.PNG)
-![](https://gerigory.github.io/assets/img/GDC/2011/Lighting-You-Up-In-Battlefield3/幻灯片49.PNG)
-![](https://gerigory.github.io/assets/img/GDC/2011/Lighting-You-Up-In-Battlefield3/幻灯片50.PNG)
-![](https://gerigory.github.io/assets/img/GDC/2011/Lighting-You-Up-In-Battlefield3/幻灯片51.PNG)
-![](https://gerigory.github.io/assets/img/GDC/2011/Lighting-You-Up-In-Battlefield3/幻灯片52.PNG)
-![](https://gerigory.github.io/assets/img/GDC/2011/Lighting-You-Up-In-Battlefield3/幻灯片53.PNG)
-![](https://gerigory.github.io/assets/img/GDC/2011/Lighting-You-Up-In-Battlefield3/幻灯片54.PNG)
-![](https://gerigory.github.io/assets/img/GDC/2011/Lighting-You-Up-In-Battlefield3/幻灯片55.PNG)
-![](https://gerigory.github.io/assets/img/GDC/2011/Lighting-You-Up-In-Battlefield3/幻灯片56.PNG)
-![](https://gerigory.github.io/assets/img/GDC/2011/Lighting-You-Up-In-Battlefield3/幻灯片57.PNG)
-![](https://gerigory.github.io/assets/img/GDC/2011/Lighting-You-Up-In-Battlefield3/幻灯片58.PNG)
-![](https://gerigory.github.io/assets/img/GDC/2011/Lighting-You-Up-In-Battlefield3/幻灯片59.PNG)
-![](https://gerigory.github.io/assets/img/GDC/2011/Lighting-You-Up-In-Battlefield3/幻灯片60.PNG)
-![](https://gerigory.github.io/assets/img/GDC/2011/Lighting-You-Up-In-Battlefield3/幻灯片61.PNG)
-![](https://gerigory.github.io/assets/img/GDC/2011/Lighting-You-Up-In-Battlefield3/幻灯片62.PNG)
-![](https://gerigory.github.io/assets/img/GDC/2011/Lighting-You-Up-In-Battlefield3/幻灯片63.PNG)
-![](https://gerigory.github.io/assets/img/GDC/2011/Lighting-You-Up-In-Battlefield3/幻灯片64.PNG)
-![](https://gerigory.github.io/assets/img/GDC/2011/Lighting-You-Up-In-Battlefield3/幻灯片65.PNG)
-![](https://gerigory.github.io/assets/img/GDC/2011/Lighting-You-Up-In-Battlefield3/幻灯片66.PNG)
-![](https://gerigory.github.io/assets/img/GDC/2011/Lighting-You-Up-In-Battlefield3/幻灯片67.PNG)
-![](https://gerigory.github.io/assets/img/GDC/2011/Lighting-You-Up-In-Battlefield3/幻灯片68.PNG)
-![](https://gerigory.github.io/assets/img/GDC/2011/Lighting-You-Up-In-Battlefield3/幻灯片69.PNG)
-![](https://gerigory.github.io/assets/img/GDC/2011/Lighting-You-Up-In-Battlefield3/幻灯片70.PNG)
-![](https://gerigory.github.io/assets/img/GDC/2011/Lighting-You-Up-In-Battlefield3/幻灯片71.PNG)
-![](https://gerigory.github.io/assets/img/GDC/2011/Lighting-You-Up-In-Battlefield3/幻灯片72.PNG)
-![](https://gerigory.github.io/assets/img/GDC/2011/Lighting-You-Up-In-Battlefield3/幻灯片73.PNG)
-![](https://gerigory.github.io/assets/img/GDC/2011/Lighting-You-Up-In-Battlefield3/幻灯片74.PNG)
-![](https://gerigory.github.io/assets/img/GDC/2011/Lighting-You-Up-In-Battlefield3/幻灯片75.PNG)
-![](https://gerigory.github.io/assets/img/GDC/2011/Lighting-You-Up-In-Battlefield3/幻灯片76.PNG)
-![](https://gerigory.github.io/assets/img/GDC/2011/Lighting-You-Up-In-Battlefield3/幻灯片77.PNG)
-![](https://gerigory.github.io/assets/img/GDC/2011/Lighting-You-Up-In-Battlefield3/幻灯片78.PNG)
-![](https://gerigory.github.io/assets/img/GDC/2011/Lighting-You-Up-In-Battlefield3/幻灯片79.PNG)
-![](https://gerigory.github.io/assets/img/GDC/2011/Lighting-You-Up-In-Battlefield3/幻灯片80.PNG)
-![](https://gerigory.github.io/assets/img/GDC/2011/Lighting-You-Up-In-Battlefield3/幻灯片81.PNG)
-![](https://gerigory.github.io/assets/img/GDC/2011/Lighting-You-Up-In-Battlefield3/幻灯片82.PNG)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image47.jpg)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image48.jpg)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image49.jpg)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image50.jpg)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image51.jpg)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image52.jpg)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image53.jpg)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image54.jpg)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image55.jpg)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image56.jpg)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image57.jpg)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image58.jpg)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image59.jpg)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image60.jpg)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image61.jpg)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image62.jpg)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image63.jpg)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image64.jpg)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image65.jpg)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image66.jpg)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image67.jpg)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image68.jpg)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image69.jpg)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image70.jpg)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image71.jpg)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image72.jpg)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image73.jpg)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image74.jpg)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image75.jpg)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image76.jpg)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image77.jpg)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image78.jpg)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image79.jpg)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image70.jpg)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image71.jpg)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image72.jpg)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image73.jpg)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image74.jpg)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image75.jpg)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image76.jpg)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image77.jpg)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image78.jpg)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image79.jpg)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image80.jpg)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image81.jpg)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image82.jpg)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image83.jpg)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image84.jpg)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image85.jpg)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image86.jpg)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image87.jpg)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image88.jpg)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image89.jpg)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image90.jpg)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image91.jpg)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image92.jpg)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image93.jpg)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image94.jpg)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image95.jpg)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image96.jpg)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image97.jpg)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image98.jpg)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image99.jpg)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image100.jpg)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image101.jpg)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image102.jpg)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image103.jpg)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image104.jpg)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image105.jpg)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image106.jpg)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image107.jpg)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image108.jpg)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image109.jpg)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image110.jpg)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image111.jpg)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image112.jpg)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image113.jpg)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image114.jpg)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image115.jpg)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image116.jpg)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image117.jpg)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image118.jpg)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image119.jpg)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image120.jpg)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image121.jpg)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image122.jpg)
+![](https://gerigory.github.io/assets/img/GDC/2015/Rendering-the-World-of-Far-Cry4/image123.jpg)
 
 ## 参考
 
 [[1]. Siggraph 2016 talk : The devil is in the details](https://advances.realtimerendering.com/s2016/Siggraph2016_idTech6.pdf)
-
