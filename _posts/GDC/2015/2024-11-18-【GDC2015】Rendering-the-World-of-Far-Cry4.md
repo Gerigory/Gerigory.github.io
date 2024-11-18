@@ -5,11 +5,11 @@ date: 2024-11-18
 img: GDC/2015/Rendering-the-World-of-Far-Cry4/image1.jpg # Add image post (optional)
 fig-caption: # Add figcaption (optional)
 tags: [Far Cry 4, Rendering, lighting, GDC, 2015]
-description: 本文分享的是战地3在GDC 2011上介绍到的一些光照相关的技巧
+description: 本文分享的是Far Cry 4在GDC 2015上介绍到的一些渲染技巧
 
 ---
 
-今天介绍的是战地3在GDC2011分享的一些光照的技术，照例，这里对工作内容做一个总结：
+本文分享的是Far Cry 4在GDC 2015上介绍到的一些渲染技巧，照例，这里对工作内容做一个总结：
 
 1. 
 
