@@ -5,7 +5,7 @@ date: 2024-11-18
 img: Other/2014/Assassin-Creed-4-lighting-weather-atmosphere/幻灯片1.PNG # Add image post (optional)
 fig-caption: # Add figcaption (optional)
 tags: [Assassin's Creed 4, Rendering, lighting, weather, atmosphere, 2014]
-description: 本文分享的是战地3在GDC 2011上介绍到的一些光照相关的技巧
+description: 本文分享的是Assassin-Creed-4在Digital Dragon 2014上介绍到的一些光照相关的技巧
 
 ---
 

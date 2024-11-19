@@ -1,6 +1,6 @@
 ---
 layout: post
-title: 【GDC 2014】 Deferred Normalized Irradiance Probes - Assassin Creed 4
+title: 【GDC 2014】 Deferred Normalized Irradiance Probes - Assassin's Creed 4
 date: 2024-11-18
 img: GDC/2014/Deferred-Normalized-Irradiance-Probes-Assassin-Creed4/幻灯片1.PNG # Add image post (optional)
 fig-caption: # Add figcaption (optional)
