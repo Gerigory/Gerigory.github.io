@@ -206,5 +206,5 @@ description: 本文分享的是战地3在GDC 2011上介绍到的一些光照相�
 
 ## 参考
 
-[[1]. Siggraph 2016 talk : The devil is in the details](https://advances.realtimerendering.com/s2016/Siggraph2016_idTech6.pdf)
+[[1]. 【GDC 2011】 Lighting You Up In attlefield 3](https://media.contentapi.ea.com/content/dam/eacom/frostbite/files/gdc11-lightingyouupinbattlefield3.pdf)
 

@@ -259,4 +259,4 @@ description: 本文分享的是Far Cry 4在GDC 2015上介绍到的一些渲染�
 
 ## 参考
 
-[[1]. Siggraph 2016 talk : The devil is in the details](https://advances.realtimerendering.com/s2016/Siggraph2016_idTech6.pdf)
+[[1]. 【GDC 2015】Rendering the World of Far Cry 4](https://ubm-twvideo01.s3.amazonaws.com/o1/vault/gdc2015/presentations/McAuley_Stephen_Rendering_the_World.pdf)

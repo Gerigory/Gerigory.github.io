@@ -206,4 +206,4 @@ description: 本文分享的是Assassin-Creed-4在Digital Dragon 2014上介绍�
 
 ## 参考
 
-[[1]. Siggraph 2016 talk : The devil is in the details](https://advances.realtimerendering.com/s2016/Siggraph2016_idTech6.pdf)
+[[1]. 【Digital Dragon 2014】 Assassin's Creed 4 lighting weather atmosphere](https://advances.realtimerendering.com/s2016/Siggraph2016_idTech6.pdf)

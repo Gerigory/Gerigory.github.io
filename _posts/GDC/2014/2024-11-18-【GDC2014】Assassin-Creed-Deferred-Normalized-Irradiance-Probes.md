@@ -214,4 +214,4 @@ description: 本文分享的是刺客信条4在GDC 2014上介绍到的全局光�
 
 ## 参考
 
-[[1]. Siggraph 2016 talk : The devil is in the details](https://advances.realtimerendering.com/s2016/Siggraph2016_idTech6.pdf)
+[[1]. 【GDC 2014】 Deferred Normalized Irradiance Probes - Assassin's Creed 4](https://bartwronski.com/wp-content/uploads/2014/05/assassin_s-creed-4-digital-dragons-2014.pdf)
