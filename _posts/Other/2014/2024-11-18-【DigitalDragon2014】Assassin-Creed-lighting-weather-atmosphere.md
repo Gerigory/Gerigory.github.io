@@ -1,6 +1,6 @@
 ---
 layout: post
-title: [Digital Dragon 2014] Assassin's Creed 4 lighting weather atmosphere
+title: 【Digital Dragon 2014】 Assassin's Creed 4 lighting weather atmosphere
 date: 2024-11-18
 img: Other/2014/Assassin's-Creed-4-lighting-weather-atmosphere/幻灯片1.PNG # Add image post (optional)
 fig-caption: # Add figcaption (optional)
