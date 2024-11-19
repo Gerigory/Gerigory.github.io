@@ -1,10 +1,10 @@
 ---
 layout: post
-title: 【Siggraph2020】Lighting Technology of The Last of Us Part II
+title: 【Siggraph 2020】Lighting Technology of The Last of Us Part II
 date: 2024-11-19
 img: Siggraph/2020/【Siggraph2020】Lighting-Technology-of-The-Last-of-Us-Part-II/幻灯片1.PNG # Add image post (optional)
 fig-caption: # Add figcaption (optional)
-tags: [Last of us II, GI, Rendering, lighting, Siggraph, 2017]
+tags: [Last of us II, GI, Rendering, lighting, Siggraph, 2020]
 description: 本文分享的是Last of us 2在Siggraph 2020上介绍到的光照方案
 
 
@@ -82,4 +82,5 @@ description: 本文分享的是Last of us 2在Siggraph 2020上介绍到的光照
 
 ## 参考
 
-[[1]. Siggraph 2016 talk : The devil is in the details](https://advances.realtimerendering.com/s2016/Siggraph2016_idTech6.pdf)
+[[1]. 【Siggraph 2013】Lighting Technology of The Last of Us or "old lightmaps -new tricks"](http://miciwan.com/SIGGRAPH2013/Lighting%20Technology%20of%20The%20Last%20Of%20Us.pdf)
+[[1]. 【Siggraph 2020】Lighting Technology of The Last of Us Part II](https://s3.amazonaws.com/nd.images/research/2020_siggraph/GpuParticles.pptx)

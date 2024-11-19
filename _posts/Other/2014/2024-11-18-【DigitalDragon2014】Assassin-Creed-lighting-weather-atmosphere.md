@@ -206,4 +206,4 @@ description: 本文分享的是Assassin-Creed-4在Digital Dragon 2014上介绍�
 
 ## 参考
 
-[[1]. 【Digital Dragon 2014】 Assassin's Creed 4 lighting weather atmosphere](https://advances.realtimerendering.com/s2016/Siggraph2016_idTech6.pdf)
+[[1]. 【Digital Dragon 2014】 Assassin's Creed 4 lighting weather atmosphere](https://bartwronski.com/wp-content/uploads/2014/05/assassin_s-creed-4-digital-dragons-2014-no_notes.pdf)

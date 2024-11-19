@@ -193,4 +193,4 @@ description: 本文分享的是战地3在GDC 2011上介绍到的一些光照相�
 
 ## 参考
 
-[[1]. Siggraph 2016 talk : The devil is in the details](https://advances.realtimerendering.com/s2016/Siggraph2016_idTech6.pdf)
+[[1]. 【Siggraph 2015】Multi-Scale Global Illumination in Quantum Break](https://advances.realtimerendering.com/s2015/SIGGRAPH_2015_Remedy_Notes.pdf)

@@ -1,10 +1,10 @@
 ---
 layout: post
-title: 【Siggraph2020】Precomputed Lighting Advances in COD Modern Warfare
+title: 【Siggraph 2020】Precomputed Lighting Advances in COD Modern Warfare
 date: 2024-11-19
 img: Siggraph/2020/【Siggraph2020】Precomputed-Lighting-Advances-in-COD-Modern-Warfare/幻灯片1.PNG # Add image post (optional)
 fig-caption: # Add figcaption (optional)
-tags: [COD, GI, Rendering, lighting, Siggraph, 2017]
+tags: [COD, GI, Rendering, lighting, Siggraph, 2020]
 description: 本文分享的是COD Modern Warfare在Siggraph 2020上介绍到的GI方案
 
 
@@ -163,4 +163,4 @@ description: 本文分享的是COD Modern Warfare在Siggraph 2020上介绍到的
 
 ## 参考
 
-[[1]. Siggraph 2016 talk : The devil is in the details](https://advances.realtimerendering.com/s2016/Siggraph2016_idTech6.pdf)
+[[1]. 【Siggraph 2020】Precomputed Lighting Advances in COD Modern Warfare](https://advances.realtimerendering.com/s2020/Sloan-Sig20_V20_crop.pptx)

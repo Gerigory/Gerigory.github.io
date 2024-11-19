@@ -112,4 +112,4 @@ description: 本文分享的是Treyarch在Siggraph 2016上介绍到的GI方案
 
 ## 参考
 
-[[1]. Siggraph 2016 talk : The devil is in the details](https://advances.realtimerendering.com/s2016/Siggraph2016_idTech6.pdf)
+[[1]. 【Siggraph 2016】Volumetric Global Illumination at Treyarch](https://advances.realtimerendering.com/s2016/Volumetric%20Global%20Illumination%20at%20Treyarch.pptx)

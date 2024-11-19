@@ -142,4 +142,4 @@ description: 本文分享的是COD Infinite Warfare在Siggraph 2017上介绍到�
 
 ## 参考
 
-[[1]. Siggraph 2016 talk : The devil is in the details](https://advances.realtimerendering.com/s2016/Siggraph2016_idTech6.pdf)
+[[1]. 【Siggraph2017】Precomputed Lighting IN COD Infinite Warfare](https://advances.realtimerendering.com/s2017/Precomputed%20Lighting%20in%20CoD%20IW_20_PPS.pdf)
