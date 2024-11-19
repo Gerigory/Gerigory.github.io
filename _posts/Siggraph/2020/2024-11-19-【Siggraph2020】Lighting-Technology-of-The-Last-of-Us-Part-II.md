@@ -1,6 +1,6 @@
 ---
 layout: post
-title: 【Siggraph2020】Lighting Technology of The Last-of-Us-Part-II
+title: 【Siggraph2020】Lighting Technology of The Last of Us Part II
 date: 2024-11-19
 img: Siggraph/2020/【Siggraph2020】Lighting-Technology-of-The-Last-of-Us-Part-II/幻灯片1.PNG # Add image post (optional)
 fig-caption: # Add figcaption (optional)
