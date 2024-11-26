@@ -1,7 +1,7 @@
 ---
 layout: post
 title: 【GDC 2012】Deferred Radiance Transfer Volumes - Global Illumination in Far Cry 3
-date: 2024-11-18
+date: 2024-11-25
 img: GDC/2012/Deferred-Radiance-Transfer-Volumes-Global-Illumination-in-Far-Cry3/image1.jpg # Add image post (optional)
 fig-caption: # Add figcaption (optional)
 tags: [Far Cry 3, Rendering, lighting, GDC, 2012]
