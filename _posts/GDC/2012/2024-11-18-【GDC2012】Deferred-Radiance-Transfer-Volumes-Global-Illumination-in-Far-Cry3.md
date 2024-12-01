@@ -111,9 +111,13 @@ GI效果除了能够响应全局光如太阳光以及天光之外，还能响应
 
 ![](https://gerigory.github.io/assets/img/GDC/2012/Deferred-Radiance-Transfer-Volumes-Global-Illumination-in-Far-Cry3/image17.jpg)
 
-2. 
+由于probe本身是稀疏的，因此需要一套高效的数据组织结构。
+
+这里会用3D Grid来存储数据，Grid中的每个Cell用一个byte，这个数值指示的是距离该点最近的probe，在该位置所属section（这里没有解释）下面的所有probes中的索引。
 
 ![](https://gerigory.github.io/assets/img/GDC/2012/Deferred-Radiance-Transfer-Volumes-Global-Illumination-in-Far-Cry3/image18.jpg)
+
+
 
 ![](https://gerigory.github.io/assets/img/GDC/2012/Deferred-Radiance-Transfer-Volumes-Global-Illumination-in-Far-Cry3/image19.jpg)
 
