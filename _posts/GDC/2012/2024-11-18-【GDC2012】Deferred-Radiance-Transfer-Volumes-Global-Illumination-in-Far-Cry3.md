@@ -237,67 +237,172 @@ Sloan的PRT方案是针对单个mesh来设计的，在烘焙计算的时候，�
 
 ![](https://gerigory.github.io/assets/img/GDC/2012/Deferred-Radiance-Transfer-Volumes-Global-Illumination-in-Far-Cry3/image32.jpg)
 
-
+按照2阶SH的存储方式，每个probe就会包含四个颜色数据，每个对应于一个SH Basis方向，而如果内存足够，算力足够的话，Basis也可以扩展到更高阶，从而得到更好的效果。
 
 ![](https://gerigory.github.io/assets/img/GDC/2012/Deferred-Radiance-Transfer-Volumes-Global-Illumination-in-Far-Cry3/image33.jpg)
 
+在CryEngine的LPV（Light Propagation Volume）的启发下，这里会设置一个跟随相机而移动的Volume Map，这个Map中的数据会从Relight之后的Probe中插值而来。
 
+之后在计算各点的irradiance的时候，就能够直接从volume map中进行采样得到，这时候还可以借助硬件滤波实现更为平滑的光照结果。与此同时，这个过程可以逐像素进行，从而在大尺寸物件上如船体，也可以得到较为平滑的光照结果。
 
 ![](https://gerigory.github.io/assets/img/GDC/2012/Deferred-Radiance-Transfer-Volumes-Global-Illumination-in-Far-Cry3/image34.jpg)
 
-3. 
+颜色三个通道的数据（RGB）会需要用到三张Volume Map，尺寸跟格式都是一样的：Volume Map的分辨率是96x96x16，格式是RGBA8，这里RGBA四个通道，分别对应于四个SH Basis方向的强度。
+
+volume map上的texel数目较多（147k），要想从头到尾更新一遍，耗时较久：在具有5个SPU的PS3上，耗时约7ms。高耗时主要在于需要完成如下工作：
+
+1. 需要从3D Grid中查找到每个像素周围最近的probe
+2. 之后从probe中获取到Basis颜色数据，并将之转换为byte格式
+
+
 
 ![](https://gerigory.github.io/assets/img/GDC/2012/Deferred-Radiance-Transfer-Volumes-Global-Illumination-in-Far-Cry3/image35.jpg)
 
-4. 
+对volume map更新的条件有两种：
+
+1. TOD变化
+2. 相机移动，相对高频，可以服用部分volume数据，采用scroll update的策略
 
 ![](https://gerigory.github.io/assets/img/GDC/2012/Deferred-Radiance-Transfer-Volumes-Global-Illumination-in-Far-Cry3/image36.jpg)
 
+对于贴图而言，我们的寻址模式可以设置为非wrap的，如左图所示，也可以设置成wrap的，如右图所示。
 
+而由于将贴图设置为wrap，在性能上会有损耗（Clamp不需要做算术运算，且空间局部性更高，计算效率自然更高），因此这里的做法是将贴图的寻址模式设置为clamp，之后通过shader的frac指令来模拟wrap寻址。
+
+在主机上（PS3），性能差异能到5倍之大（震惊），不过clamp就不能在边缘上实现连续的平滑滤波了，为了做到这一点，会需要留出几个texel并对数据做复制。
 
 ![](https://gerigory.github.io/assets/img/GDC/2012/Deferred-Radiance-Transfer-Volumes-Global-Illumination-in-Far-Cry3/image37.jpg)
 
- 
+ FC3采用的是延迟管线，会先走Base Pass生成GBuffer，之后执行HDR Lighting，最后做后处理计算。
 
 ![](https://gerigory.github.io/assets/img/GDC/2012/Deferred-Radiance-Transfer-Volumes-Global-Illumination-in-Far-Cry3/image38.jpg)
 
+GBuffer包含了基色、世界法线、深度以及其他材质属性。
+
 ![](https://gerigory.github.io/assets/img/GDC/2012/Deferred-Radiance-Transfer-Volumes-Global-Illumination-in-Far-Cry3/image39.jpg)
 
-- 
+在正式的Lighting计算之后，会先做一遍屏幕空间计算，得到各个像素的ambient light结果，存储到一个屏幕尺寸的buffer中。
+
+接着再执行太阳光照明，局部光照明，最后将这些照明结果统合到一起。
 
 ![](https://gerigory.github.io/assets/img/GDC/2012/Deferred-Radiance-Transfer-Volumes-Global-Illumination-in-Far-Cry3/image40.jpg)
 
+这是屏幕空间ambient光计算代码，下面逐步分解一下。
+
 ![](https://gerigory.github.io/assets/img/GDC/2012/Deferred-Radiance-Transfer-Volumes-Global-Illumination-in-Far-Cry3/image41.jpg)
+
+先获取当前位置在世界空间中采样volume map的uv坐标，这里会对当前位置做一个extrusion（凸出）处理，沿着法线做一个挤出（避免遮挡或陷地之类的情况？）。
+
+拿到UV后，采样得到三个通道下的四个SH basis的强度数值。
 
 ![](https://gerigory.github.io/assets/img/GDC/2012/Deferred-Radiance-Transfer-Volumes-Global-Illumination-in-Far-Cry3/image42.jpg)
 
+对上述采样结果进行组装，得到四个新的float3，代表四个SH Basis方向上的颜色数值。
+
 ![](https://gerigory.github.io/assets/img/GDC/2012/Deferred-Radiance-Transfer-Volumes-Global-Illumination-in-Far-Cry3/image43.jpg)
+
+接下来基于法线来得到四个SH Basis的权重，通过投影计算得到。
 
 ![](https://gerigory.github.io/assets/img/GDC/2012/Deferred-Radiance-Transfer-Volumes-Global-Illumination-in-Far-Cry3/image44.jpg)
 
+权重会做一轮处理，包括scale跟bias，这里可以看到，仅朝下的basis在这里会有影响，相当于做了一个映射，从[0,1]映射到了[0.5, 1]，或者从[-1, 1]映射到了[0, 1]。
+
+之后基于权重对四个方向的irradiance进行加权混合，得到最终的环境光结果。
+
 ![](https://gerigory.github.io/assets/img/GDC/2012/Deferred-Radiance-Transfer-Volumes-Global-Illumination-in-Far-Cry3/image45.jpg)
 
-
+下面来看看环境光的表现，在上图中有大面积的阴影区域，因此环境光在这里会有较为明显的作用
 
 ![](https://gerigory.github.io/assets/img/GDC/2012/Deferred-Radiance-Transfer-Volumes-Global-Illumination-in-Far-Cry3/image46.jpg)
 
+先来看下这个区域的道路排跟树的GI效果，可以看到，即使当前区域是被阴影覆盖的，这俩都接受到了来自地表的强反射效果（因为这里只存储了低频的radiance transfer数据）。
+
 ![](https://gerigory.github.io/assets/img/GDC/2012/Deferred-Radiance-Transfer-Volumes-Global-Illumination-in-Far-Cry3/image47.jpg)
+
+这里有个大石头，接受到了从植被反弹过来的光照，这个反射颜色跟地表的颜色有明显的区别，同时这个光照表现还会跟随法线而变化，从而使得这个岩石的光照结果变得立体而不那么扁平。
+
 ![](https://gerigory.github.io/assets/img/GDC/2012/Deferred-Radiance-Transfer-Volumes-Global-Illumination-in-Far-Cry3/image48.jpg)
+
+再来看看另一个户外场景
+
 ![](https://gerigory.github.io/assets/img/GDC/2012/Deferred-Radiance-Transfer-Volumes-Global-Illumination-in-Far-Cry3/image49.jpg)
+
+这里可以看到，地表以及低矮植被从上方采集的树叶的绿色反射光照
+
 ![](https://gerigory.github.io/assets/img/GDC/2012/Deferred-Radiance-Transfer-Volumes-Global-Illumination-in-Far-Cry3/image50.jpg)
+
+以及这里的石头获取的来自地表的反弹颜色
+
 ![](https://gerigory.github.io/assets/img/GDC/2012/Deferred-Radiance-Transfer-Volumes-Global-Illumination-in-Far-Cry3/image51.jpg)
+
+在夜晚的时候，来自太阳光的间接光比例就变得很低，因此场景的环境光变化主要来自于天光的直接照明部分。
+
 ![](https://gerigory.github.io/assets/img/GDC/2012/Deferred-Radiance-Transfer-Volumes-Global-Illumination-in-Far-Cry3/image52.jpg)
+
+在这张图里可以感受到一个较强的近似AO的效果，这个效果的数据基本上都是来自probe。
+
 ![](https://gerigory.github.io/assets/img/GDC/2012/Deferred-Radiance-Transfer-Volumes-Global-Illumination-in-Far-Cry3/image53.jpg)
+
+在这个视角下，就能看到由于天光的gradient（方向变化？）而导致的颜色变化，因为在屏幕之外有一个落日的效果，因此靠近落日方向的表面会被染色成橘色。
+
 ![](https://gerigory.github.io/assets/img/GDC/2012/Deferred-Radiance-Transfer-Volumes-Global-Illumination-in-Far-Cry3/image54.jpg)
+
+由于半透物件如玻璃、粒子等不能通过延迟管线完成渲染，这里还需要为前向渲染管线添加支持。具体做法为：
+
+1. 在CPU上计算每个物件所能感知到的最近的probe
+2. 将probe的相关参数作为shader constants传递到shader中，供前向渲染使用
+
 ![](https://gerigory.github.io/assets/img/GDC/2012/Deferred-Radiance-Transfer-Volumes-Global-Illumination-in-Far-Cry3/image55.jpg)
+
+FC3还有较多的室内场景，室内场景的光照强度与复杂度跟室外场景差别显著，而这也是室内容易触发漏光的最主要原因。
+
+上图就是一个典型的漏光问题的示例，其中室内采集到了户外的probe数据，从而使得地表被染色成了蓝色。
+
 ![](https://gerigory.github.io/assets/img/GDC/2012/Deferred-Radiance-Transfer-Volumes-Global-Illumination-in-Far-Cry3/image56.jpg)
+
+针对上述情况的应对策略相对简单：
+
+1. 在离线为每个室内环境配置一个volume，并为该volume指定一个probe
+2. 运行时会将该volume的geometry绘制到一个屏幕空间的mask buffer上，并对该buffer做模糊处理，以实现室内外光照结果的平滑过渡
+3. 被volume覆盖的像素，光照计算时就从该volume配对的probe上获取光照数据，从而避免上述漏光问题
+
 ![](https://gerigory.github.io/assets/img/GDC/2012/Deferred-Radiance-Transfer-Volumes-Global-Illumination-in-Far-Cry3/image57.jpg)
+
+这里还有一个问题需要解决，那就是远景物件，尤其是植被的ambient lighting，如果直接用天光的数据，那远景效果就会带有一种蓝色染色效果，看起来就不太正常。
+
 ![](https://gerigory.github.io/assets/img/GDC/2012/Deferred-Radiance-Transfer-Volumes-Global-Illumination-in-Far-Cry3/image58.jpg)
+
+为了解决上述问题，这里增加了一个俯视角（top-down）的2D遮挡图，这个图存储的遮挡信息来自于probe的可见性数据。为了做streaming，这里会以sector为单位，将该贴图划分成一个个的tile，每个sector对应于一个tile，在某个sector的probe streaming in的时候，就会触发对应tile的数据的更新。
+
+在运行时采样的时候，就可以基于这个遮挡信息来判断当前的ambient数据是否能够取用probe上的颜色，从而屏蔽掉被遮挡区域的天光影响，同时这里还会存储每个位置的probe的高度，从而可以根据到probe的距离来调整染色的强弱（与地表反弹颜色的混合权重），实现更为真实的染色效果
+
 ![](https://gerigory.github.io/assets/img/GDC/2012/Deferred-Radiance-Transfer-Volumes-Global-Illumination-in-Far-Cry3/image59.jpg)
+
+因为volume map的更新是发生在CPU的，如果GPU的读取与CPU的更新发生时刻重合的话，就有可能导致效果的闪烁。
+
+解决这个问题的常用策略是采用double buffer，但这种做法会有额外的显存（内存）消耗，FC3采用的是另一种策略，即通过自定义的job scheduling。
+
+如上图所示，SPU负责更新volume map，RSX负责GBuffer的计算与SSAO的计算，PPU则负责创建jobs并准备好相关的计算数据。里面的JTS是Jump to self command的简写（不是太明白作用）
+
+因为GBuffer Pass的计算不需要用到volume map，因此会考虑将两者放到同时并行完成，在GBuffer以及SSAO完成之后，会等待volume map的更新完成，通过并行跟barrier等待的方式来解决前面的问题。
+
 ![](https://gerigory.github.io/assets/img/GDC/2012/Deferred-Radiance-Transfer-Volumes-Global-Illumination-in-Far-Cry3/image60.jpg)
+
+
+
 ![](https://gerigory.github.io/assets/img/GDC/2012/Deferred-Radiance-Transfer-Volumes-Global-Illumination-in-Far-Cry3/image61.jpg)
+
+
+
 ![](https://gerigory.github.io/assets/img/GDC/2012/Deferred-Radiance-Transfer-Volumes-Global-Illumination-in-Far-Cry3/image62.jpg)
+
+
+
 ![](https://gerigory.github.io/assets/img/GDC/2012/Deferred-Radiance-Transfer-Volumes-Global-Illumination-in-Far-Cry3/image63.jpg)
+
+
+
+
 
 ## 参考
 
