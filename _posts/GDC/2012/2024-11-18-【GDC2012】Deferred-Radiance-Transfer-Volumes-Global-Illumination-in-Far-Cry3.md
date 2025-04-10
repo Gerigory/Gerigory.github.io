@@ -11,7 +11,18 @@ description: 本文分享的是Far Cry 3在GDC 2012上介绍到的全局光方�
 
 本文分享的是Far Cry 3在GDC 2012上介绍到的全局光方案，照例，这里对工作内容做一个总结：
 
-1. 
+1. FC3是12年上线的写实射击游戏，因为地图尺寸略大，所以不能使用lightmap作为GI方案，会使得包体尺寸过大，而实时GI效果还无法令人满意，因此采用的是另一套离线烘焙的方案，类PRT方案
+2. 该方案的性能表现比较好，内存占用只有数M左右，GPU单帧耗时低于0.5ms
+3. 整体的GI由三部分组成，分别是太阳光与天光的间接光、天光的直接光以及屏幕空间的SSAO效果，前面两者都是通过摆放probe+离线烘焙+运行时relighting来实现的
+4. 具体到probe的计算跟使用上，静态物体既能接受probe的光照结果，也会参与probe数据的计算，而动态物体则只会接受光照，不参与计算
+5. 针对太阳光、天光的间接光以及天光的直接光，都是可以通过PRT的方式来计算与获取，而对于局部光源的动态照明效果，由于PRT的假设不能满足，因此采用的是
+6. Probe的relighting是发生在CPU上的，同时还会将relighting之后的光照结果写入到3D贴图中供GPU使用
+7. probe只摆放一层，通过俯视角拿到最上层遮挡物后，按照一定的高度放置其上，probe之间间隔4m
+8. Probe上会存储低频的PRT数据+天光可见性数据，其中PRT是与光照解耦的数据，用于表达该点来自各个方向的radiance
+9. 相对于Sloan的逐物件顶点烘焙的PRT数据不同，Probe的数据更为稀疏，是世界空间的数据，烘焙PRT所需的法线数据则通过transfer basis来指定，这里选择了四个basis用于表达不同方向的光照输入情况
+10. 在PC上，会为了支持局部动态光源的GI效果，额外烘焙一套LRT（Local Radiance Transfer）数据，在远景输入光源各点光场一致的假设不成立的时候，改由多点光照计算来提升表现
+11. CPU做Relighting的时候，会将PRT（包括太阳光与天光的全局PRT以及局部光的LRT）与对应光源的SH数据做点乘，来得到各个probe的relighting结果，结果写入3D贴图后，GPU直接采样即可
+12. 3D贴图即volume map是会随着相机而移动的，更新的时候会参考shadowmap 的scroll update逻辑做更新
 
 ---
 
@@ -388,11 +399,9 @@ FC3还有较多的室内场景，室内场景的光照强度与复杂度跟室�
 
 ![](https://gerigory.github.io/assets/img/GDC/2012/Deferred-Radiance-Transfer-Volumes-Global-Illumination-in-Far-Cry3/image60.jpg)
 
-
+在PC上，还会对volume map做blur，从而得到上图中右边的平滑光影表现。
 
 ![](https://gerigory.github.io/assets/img/GDC/2012/Deferred-Radiance-Transfer-Volumes-Global-Illumination-in-Far-Cry3/image61.jpg)
-
-
 
 ![](https://gerigory.github.io/assets/img/GDC/2012/Deferred-Radiance-Transfer-Volumes-Global-Illumination-in-Far-Cry3/image62.jpg)
 
