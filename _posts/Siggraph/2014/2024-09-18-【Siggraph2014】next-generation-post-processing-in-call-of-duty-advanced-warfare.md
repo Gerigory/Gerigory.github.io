@@ -99,7 +99,7 @@ Accumulation Buffer的方案成本过高，一般没人考虑，本文介绍的�
 
 ![](https://gerigory.github.io/assets/img/Siggraph/2014/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片11.PNG)
 
-在t+10时刻移动到了一个新的位置，而随机光栅化方案则是对该矩形的像素做一个随机处理，基于随机结果将之摆放到前后两个位置中间的某个点上。
+在t+10时刻移动到了一个新的位置，而随机光栅化方案则是对该矩形的像素做一个随机处理，基于随机结果将之摆放到以前后两个位置为范围的中间某个位置上，可以简单记为NewPos = LastFramePos + (CurFramePos - LastFramePos) * Random
 
 ![](https://gerigory.github.io/assets/img/Siggraph/2014/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片12.PNG)
 
@@ -117,7 +117,9 @@ Accumulation Buffer的方案成本过高，一般没人考虑，本文介绍的�
 
 ![](https://gerigory.github.io/assets/img/Siggraph/2014/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片15.PNG)
 
-但是如果对于某个像素，我们做多次随机，之后将随机到某个位置的数据累加起来的话，效果就会好起来
+但是如果对于某个像素，我们做多次随机，之后将随机到某个位置的数据累加起来的话，效果就会好起来，即：
+1. PixelA -> {SampleA0, SampleA1, ..., SampleAN} with Random Strategy
+2. PixelColor = Sum(Samples)/N，这里Samples指的是经过随机后落在当前位置的像素颜色
 
 ![](https://gerigory.github.io/assets/img/Siggraph/2014/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片16.PNG)
 
@@ -129,13 +131,13 @@ Accumulation Buffer的方案成本过高，一般没人考虑，本文介绍的�
 
 ![](https://gerigory.github.io/assets/img/Siggraph/2014/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片18.PNG)
 
-问题就转化为了，如何将运动的物体沿着对应的方向做一定比例的拉伸，并且将拉伸后的效果按照一定的比例与背景做混合
+问题就转化为了，如何将运动（这里说的运动，说的是相对于人眼，或者游戏中的相机，对于相对于相机不动的像素，理论上也不需要叠加，下同）的物体沿着对应的方向做一定比例的拉伸，并且将拉伸后的效果按照一定的比例与背景做混合
 
 ![](https://gerigory.github.io/assets/img/Siggraph/2014/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片19.PNG)
 
 而我们可以通过：
 
-1. 将前景物体（移动物体）做模糊（线性模糊、径向模糊等）来实现物件的伸缩（伸缩范围对应于模糊半径，对应于移动速度）
+1. 将前景物体（相对于相机运动的物体）做模糊（线性模糊、径向模糊等）来实现物件的伸缩（伸缩范围对应于模糊半径，对应于移动速度）
 2. 前景与背景混合的alpha，则可以通过对该物体移动到该位置时的叠加次数（除以总次数）来得到（甚至这里可以基于移动速度推导出一个公式，避免alpha贴图的需要）
 
 这俩贴图都可以通过scatter-as-you-gather后处理算法计算得到。
@@ -145,6 +147,7 @@ Accumulation Buffer的方案成本过高，一般没人考虑，本文介绍的�
 先来看下最直观的做法：基础散射算法。
 
 我们的运动模糊可以通过将某个像素沿着其运动的方向不停地扩散来得到
+> 为什么是向前向后扩散，而不是背向运动方向做扩散（表示将过往帧数的数据叠加起来）？
 
 ![](https://gerigory.github.io/assets/img/Siggraph/2014/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片21.PNG)
 
@@ -162,9 +165,9 @@ Accumulation Buffer的方案成本过高，一般没人考虑，本文介绍的�
 
 scatter-as-you-gather执行起来较为高效，不过会遇到较多的边界情况，总结起来有上述三个问题需要解决：
 
-1. 如何知道当前像素的采样范围
-2. 确定采样范围后，要如何知道哪些像素应该扩散至当前像素
-3. 如何恢复背景数据
+1. 如何知道当前像素的采样范围，即Gather半径
+2. 确定采样范围后，要如何知道哪些像素应该扩散至当前像素，即哪些像素是能够对当前像素产生贡献的，需要考虑到遮挡关系的影响
+3. 如何恢复背景数据，即对于被前景物件所遮挡的区域，如何拿到对应的数据
 
 
 
