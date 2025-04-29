@@ -81,7 +81,11 @@ COD在Siggraph 2014上分享过他们在后处理方面的一些工作要点，�
 运动模糊是提升效果真实感的重要手段，常见的运动模糊有三类：线性、旋转以及缩放（径向）。而常见的模拟方案有如下几种[3]：
 
 1. Accumulation Buffer：将运动的物体按照运动方向做多次渲染，之后按照一定的权重累加之后，再叠加到静态背景上
-2. Velocity Buffer：基于屏幕空间每个像素的速度向量，做一个向前（按照曝光的理论，运动模糊表现为前后两部分的虚化）与向后的颜色扩散，以模拟该像素经过路径上的染色行为
+2. Velocity Buffer：基于屏幕空间每个像素的速度向量，做一个向前与向后的颜色扩散，以模拟该像素经过路径上的染色行为
+   1. 按照曝光的理论，运动模糊表现为前后两部分的虚化，解释如下：
+      1. 前端的虚化在于有限的曝光时间下，动态物件在前端位置的停留时间较短，因此需要混合一部分原有的背景数据
+      2. 后端的虚化在于，动态物件只有前面几帧的数据残留下来，后续多帧此处区域已经没有动态物件的贡献，同样因此需要叠加背景数据
+
 
 注意：上图中介绍的第二种Stochastic Rasterization的方案不是上面说的Velocity Buffer的方案，而是通过随机噪点的方式来模拟的方案，参考[6]
 
@@ -137,14 +141,20 @@ Accumulation Buffer的方案成本过高，一般没人考虑，本文介绍的�
 
 而我们可以通过：
 
-1. 将前景物体（相对于相机运动的物体）做模糊（线性模糊、径向模糊等）来实现物件的伸缩（伸缩范围对应于模糊半径，对应于移动速度）
-2. 前景与背景混合的alpha，则可以通过对该物体移动到该位置时的叠加次数（除以总次数）来得到（甚至这里可以基于移动速度推导出一个公式，避免alpha贴图的需要）
+1. 将前景物体做模糊来实现物件的伸缩
+   1. 前景物体指的是相对于相机运动的物体，下同
+   2. 模糊方式有线性模糊、径向模糊等
+   3. 伸缩范围对应于模糊半径，对应于移动速度
+
+2. 前景与背景混合的alpha，则可以通过对该物体移动到该位置时的叠加次数（除以总次数）来得到
+   1. 甚至这里可以基于移动速度推导出一个公式，避免alpha贴图的需要
+
 
 这俩贴图都可以通过scatter-as-you-gather后处理算法计算得到。
 
 ![](https://gerigory.github.io/assets/img/Siggraph/2014/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片20.PNG)
 
-先来看下最直观的做法：基础散射算法。
+先来看下最直观的做法：基础散射（Scatter）算法。
 
 我们的运动模糊可以通过将某个像素沿着其运动的方向不停地扩散来得到
 > 为什么是向前向后扩散，而不是背向运动方向做扩散（表示将过往帧数的数据叠加起来）？
@@ -155,31 +165,46 @@ Accumulation Buffer的方案成本过高，一般没人考虑，本文介绍的�
 
 ![](https://gerigory.github.io/assets/img/Siggraph/2014/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片22.PNG)
 
-这种计算思路叫散射算法，虽然理解直观，但实现起来比较低效。
+这种计算思路叫散射算法，在实现层面，则是基于当前点的速度，将之叠加到被其速度所覆盖的周边像素上。
 
-接下来换个角度看看问题，介绍一下前面说到的scatter-as-you-gather方法：这次我们不再将某个像素沿着其移动的方向做扩散，而是对于每个位置，我们检查其相邻的像素，看看是否会被该像素扩散过来。
+这个算法虽然理解直观，但实现起来比较低效
+
+> 考虑到GPU的特性，想要将一个像素的数据取出来写入到多个UV位置，有几种做法：
+>
+> 1. 分成多个pass实现
+> 2. 在单个pass中实现，借助UAV的特性完成
+> 3. 通过GS，将单次的全屏后处理，转化为多次（多个triangle）
+>
+> 不论是哪种方式，计算消耗都不低（UAV在吞吐量与读写延迟上都远远不如RT/SRV，30%左右的差异）
+
+接下来换个角度看看问题，介绍一下前面说到的scatter-as-you-gather（简称Gather）方法：这次我们不再将某个像素沿着其移动的方向做扩散，而是对于每个位置，我们检查其相邻的像素，看看是否会被该像素扩散过来（需要判断速度是否能够覆盖）。
 
 扩散方法其实是将一个像素写入多个位置（需要多个pass），scatter-as-you-gather则是从多个像素读取数据写入一个位置（只需要一个pass）。
 
 ![](https://gerigory.github.io/assets/img/Siggraph/2014/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片23.PNG)
 
-scatter-as-you-gather执行起来较为高效，不过会遇到较多的边界情况，总结起来有上述三个问题需要解决：
+scatter-as-you-gather执行起来较为高效，不过会遇到较多的边界情况，总结起来有三个问题需要解决：
 
-1. 如何知道当前像素的采样范围，即Gather半径
-2. 确定采样范围后，要如何知道哪些像素应该扩散至当前像素，即哪些像素是能够对当前像素产生贡献的，需要考虑到遮挡关系的影响
+1. 如何知道当前像素的采样范围（Gather半径），即哪些像素是可能对当前像素产生贡献的，这里会存在一个分歧：
+   1. 如果范围过大，就会导致计算性能的浪费
+   2. 如果范围过小，就会因为部分数据缺失，从而导致效果问题
+
+2. 要如何知道哪些像素应该扩散至当前像素，即范围内哪些像素是能够对当前像素产生贡献的
+   1. 这里既需要考虑到像素间的遮挡遮挡关系避免叠加了错误数据，同时还要考虑贡献方的速度，从方向与大小与深度来判断是会产生贡献
+
 3. 如何恢复背景数据，即对于被前景物件所遮挡的区域，如何拿到对应的数据
 
-
+下面对这三个问题分别通过事例来介绍。
 
 ![](https://gerigory.github.io/assets/img/Siggraph/2014/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片24.PNG)
 
 先来看看采样范围的事情，最简单的方法就是基于当前像素的速度来计算，不过这里会有问题。
 
-如上图所示，假设当前像素的速度为3，那么其采样范围就是前后各三个采样点。
+如上图所示，假设当前像素的速度为3（往右），那么其采样范围就是前后各三个采样点。
 
 ![](https://gerigory.github.io/assets/img/Siggraph/2014/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片25.PNG)
 
-而假设蓝色物体的移动速度高过3，那么其扩散的范围就会覆盖到橙色的点，而此时橙色的点按照自己的速度来采样，就会采取不到蓝色物体的数据，从而使得结果异常。
+但如果蓝色物体的移动速度高过3，那么从现实中的经验来看，其应该对当前像素产生贡献，但假如按照当前点（橙色）的速度来采样，蓝色box的数据就没有办法进来，导致结果错误。
 
 ![](https://gerigory.github.io/assets/img/Siggraph/2014/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片26.PNG)
 
@@ -191,43 +216,51 @@ scatter-as-you-gather执行起来较为高效，不过会遇到较多的边界�
 
 ![](https://gerigory.github.io/assets/img/Siggraph/2014/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片28.PNG)
 
-如上图所示，黄色是当前像素，假设待采样的sample位于右边，其扩散的范围用蓝色box表示，那么这种情况下由于没有覆盖到黄色像素，因此该sample就会被拒绝
+假设当前的像素点为图示黄色采样点，同时，待采样的sample位于右边，其（左右）扩散的范围用蓝色box表示
+
+按照图示情况，因为没有覆盖到黄色像素，所以该sample的颜色就不会叠加到黄色点上。
 
 ![](https://gerigory.github.io/assets/img/Siggraph/2014/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片29.PNG)
 
-而如果sample移动速度快，就会覆盖到黄色像素，同时由于sample距离相机跟进，那么在这两个条件下，就应该被黄色像素所接受。
+如果蓝色sample的移动速度加快到能够覆盖到黄色像素，此时由于蓝色sample距离相机更近，sample的颜色就会被叠加到黄色点上。
 
 ![](https://gerigory.github.io/assets/img/Siggraph/2014/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片30.PNG)
 
-最后一个情况，虽然sample的扩散范围覆盖了当前像素，但是距离相机过远，所以也不会产生贡献。
+而对于上图这种左侧的蓝色点的情况，虽然速度足够快，能够覆盖到蓝色点，但是由于其距离相机更远，也就是说即使其移动轨迹有与黄色点重合的部分，但重合的部分实际上是被黄色点所遮挡的，因此这个sample的颜色是不应该叠加到黄色点上的。
 
 ![](https://gerigory.github.io/assets/img/Siggraph/2014/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片31.PNG)
 
-再来看最后一个非常典型的，但是理解起来可能有点困难的问题。
+再来看最后一个问题。
 
 ![](https://gerigory.github.io/assets/img/Siggraph/2014/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片32.PNG)
 
-假设这里有个水平移动的物体
+如上图的蓝色box所示，假设这里有个水平移动的物体
 
 ![](https://gerigory.github.io/assets/img/Siggraph/2014/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片33.PNG)
 
-假设我们采用的是Accumulation buffer方案，那么我们就需要对该物体多帧的数据进行混合。
+前面介绍了Motion Blur的Accumulation Buffer实现算法，在这种算法下，我们就需要将该物体沿着轨迹渲染多遍，并混合叠加（当然，叠加结果需要除以混合次数）。
 
 ![](https://gerigory.github.io/assets/img/Siggraph/2014/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片34.PNG)
 
-直到我们得到了满意的效果，这就是我们需要的最终的效果
+最终的混合结果大致如上图所示（效果跟前面的前后两端虚化的结论是一致的）。
 
 ![](https://gerigory.github.io/assets/img/Siggraph/2014/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片35.PNG)
 
-但是将最终的效果跟我们的原始color buffer输入来做比较的话，你会发现该物体的有部分区域已经变得透明了，也就是说会混合其背后的物体的颜色数据，而这些数据在原始的color buffer中我们是没有的。
+将最终的效果跟我们的原始color buffer输入相比较，我们就会发现，动态物体移动速度方向前后两端部分已经虚化，虚化的部分需要与背景颜色相叠加。
+
+然而，因为所有的模糊都是基于当前帧的color buffer数据完成的，对于前端区域需要叠加背景颜色的情况，由于背景颜色数据是缺失的，因此这里叠加的颜色从哪里取得，就会是一个问题。
 
 ![](https://gerigory.github.io/assets/img/Siggraph/2014/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片36.PNG)
 
-这里用一个真实的图片来做进一步说明
+下面基于图片做进一步说明
 
 ![](https://gerigory.github.io/assets/img/Siggraph/2014/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片37.PNG)
 
-这是运动模糊后的效果，其中红线描边部分是原始角色所覆盖的区域的轮廓线，放大一看就会发现，模糊的数据其实是分布在红线的两边的，那么红线内部的邻近区域是需要获取到背景的天空数据的，在我们只有一张原始贴图的前提下，这部分数据从何而来。
+这是运动模糊后的效果，其中红线描边部分是原始角色所覆盖的区域的轮廓线，这里也可以理解为当前帧，角色的外轮廓。
+
+如果将图片放大，我们就会发现，模糊的数据其实是分布在红线的两边的（这个其实还是因为前面说的，需要将当前像素的数据向前向后scatter，但是一直不明白，为什么不是只向后scatter）
+
+而红线内侧的邻近区域，由于在当前帧的scenecolor中是被角色所遮挡的，此时虚化时需要叠加背后的天空数据，而天空数据因为被角色遮挡而无法获得。
 
 ![](https://gerigory.github.io/assets/img/Siggraph/2014/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片38.PNG)
 
