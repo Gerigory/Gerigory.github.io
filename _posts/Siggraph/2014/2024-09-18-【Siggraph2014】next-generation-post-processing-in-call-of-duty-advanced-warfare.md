@@ -158,6 +158,7 @@ Accumulation Buffer的方案成本过高，一般没人考虑，本文介绍的�
 
 我们的运动模糊可以通过将某个像素沿着其运动的方向不停地扩散来得到
 > 为什么是向前向后扩散，而不是背向运动方向做扩散（表示将过往帧数的数据叠加起来）？
+> 基于上下文的推测，应该是为了解决背景信息获取不到的问题而做的调整，比如一辆车，如果按照单向模糊来做，那车头部分就需要混入被车头所遮挡的背景信息，而基于当前帧的scene color做的模糊，这部分数据是缺失的，怎么办呢？干脆做成双向模糊，将模糊区域从车头移动到车头前面的背景区域，这样就能拿到车头与背景的数据了。
 
 ![](https://gerigory.github.io/assets/img/Siggraph/2014/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片21.PNG)
 
@@ -278,9 +279,9 @@ scatter-as-you-gather执行起来较为高效，不过会遇到较多的边界�
 
 ![](https://gerigory.github.io/assets/img/Siggraph/2014/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片41.PNG)
 
-如果直接以tile的最大速度来推算覆盖范围，就有可能部分像素虽然归属于A tile，但是其相邻的tile的速度更大，也会覆盖到该像素，从而导致覆盖范围计算结果不准确。
+这里有一个问题，即如果我们直接以tile的最大速度来推算覆盖范围，就有可能出现，A tile的最大速度覆盖不到B Tile，但是B Tile的速度更大，却会覆盖A Tile，从而导致覆盖范围计算结果不准确。
 
-这里还增加了一个额外的pass，即对tile做一个3x3（tiles）的最大值处理，从而保证相邻tile的数据都被考虑到了。
+为了解决这个问题，这里还会增加一个额外的pass，即对tile的速度数据，做一个3x3（tiles）的最大值处理，从而保证相邻tile的数据都被考虑到了。
 
 ![](https://gerigory.github.io/assets/img/Siggraph/2014/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片42.PNG)
 
@@ -288,7 +289,7 @@ scatter-as-you-gather执行起来较为高效，不过会遇到较多的边界�
 
 ![](https://gerigory.github.io/assets/img/Siggraph/2014/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片43.PNG)
 
-再来个直观的展示，这是之前的贴图
+再来个直观的展示，这是Blur之前的贴图
 
 ![](https://gerigory.github.io/assets/img/Siggraph/2014/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片44.PNG)
 
@@ -296,25 +297,29 @@ scatter-as-you-gather执行起来较为高效，不过会遇到较多的边界�
 
 ![](https://gerigory.github.io/assets/img/Siggraph/2014/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片45.PNG)
 
-而按照前面tile方法的最大速度来计算覆盖范围，得到的效果是这样的，注意看模糊区域过渡效果，这种方案过渡明显更为平滑（前面的方案则有硬边）。
+而按照前面tile方法的最大速度来计算覆盖范围，得到的效果是这样的，注意看模糊区域过渡效果，这种方案过渡明显更为平滑（而前面的方案则有硬边）。
 
 ![](https://gerigory.github.io/assets/img/Siggraph/2014/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片46.PNG)
 
-再来看第二个问题，依然延续McGuire的思路，不过这里做了一些补充说明。
+再来看第二个问题，即如何辨别哪些像素会对当前像素做出贡献，需要考虑速度的方向、大小以及深度等多个因素。
+
+这里依然采用的是McGuire的思路。
 
 ![](https://gerigory.github.io/assets/img/Siggraph/2014/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片47.PNG)
 
 McGuire算法的步骤给出如上图所示：
-
-1. 首先针对当前像素，筛选出待采样范围内的sample，哪些是前景，哪些是背景
-2. 之后基于如下的三个条件来计算出每个sample的权重
-   1. 前景数据需要满足其速度能够覆盖当前像素
-   2. 背景数据也要满足速度能够覆盖当前像素（背景指的是深度低于当前像素的，也能对当前像素产生贡献？后面会说，这部分数据是用于替代被遮挡的背景数据的，用于实现inner blur）
-   3. sample的速度跟当前像素的速度相似的（指的是方向跟大小都相似？），这种情况下，这两个像素会相互贡献（没明白？）
+1. 首先针对当前像素，筛选出待采样范围内的所有sample，并判断哪些是前景，哪些是背景
+2. 之后基于如下的三个条件来计算出每个sample的叠加权重
+   1. 前景数据需要满足其速度能够覆盖当前像素，即针对速度的方向与大小来看，移动轨迹与当前像素存在交集
+   2. 背景数据也要满足速度能够覆盖当前像素
+       1. 背景指的是深度低于当前像素的，为什么也能对当前像素产生贡献？
+       2. 后面会说，这部分数据是用于替代被遮挡的背景数据的，用于实现inner blur
+   3. sample的速度跟当前像素的速度相似的（指的是方向跟大小都相似？），这种情况下，这两个像素会相互贡献（遵循前面的前后scatter的逻辑）
 
 ![](https://gerigory.github.io/assets/img/Siggraph/2014/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片48.PNG)
 
-针对前面的算法，这里做了改进，第一个改进点就是：能够更精准的计算各个sample的贡献，参考上图两者的效果对比，左侧效果存在硬边，右侧的效果更为平滑。
+针对前面的算法，这里做了改进，第一个改进点是提高各个sample的贡献的精确度。
+参考上图两者的效果对比，左侧效果存在硬边，右侧的效果更为平滑。
 
 ![](https://gerigory.github.io/assets/img/Siggraph/2014/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片49.PNG)
 
@@ -369,7 +374,6 @@ McGuire算法的步骤给出如上图所示：
 ![](https://gerigory.github.io/assets/img/Siggraph/2014/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片61.PNG)
 
 理论上，要按照前面的权重的方法对每个采样点做加权求和，不过实际实现的时候采用了一种简单的方法，就是：
-
 1. 按照McGuire的方法来做前景跟背景数据的累加
 2. 不过在累加后对累加结果做一个梯度处理
 
@@ -456,7 +460,6 @@ McGuire算法的步骤给出如上图所示：
 ![](https://gerigory.github.io/assets/img/Siggraph/2014/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片82.PNG)
 
 总结一下：
-
 1. 在采样数不足的时候，通过添加噪声的方式可以有效提升画面质量
 2. 通过dither的方式加上时域复用还可以进一步提升画面品质
 
@@ -473,7 +476,6 @@ McGuire算法的步骤给出如上图所示：
 ![](https://gerigory.github.io/assets/img/Siggraph/2014/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare/幻灯片85.PNG)
 
 在具体的实现上，这里还有一些建议：
-
 1. 最大的速度从原来的2D计算，变成两个1D计算（这种算法不只是可以用于模糊，所有类似的计算都可以）
 2. 将速度跟depth放到一张buffer中，从而降低shader采样数
 3. 对tile采样的坐标做dither处理，从而可以有效降低tile的pattern表现
