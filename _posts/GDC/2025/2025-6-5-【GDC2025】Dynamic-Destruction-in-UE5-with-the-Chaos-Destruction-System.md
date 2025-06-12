@@ -95,31 +95,61 @@ Root Proxy可以理解为在破碎被触发前，用于替代破坏物进行渲�
 
 ![](https://gerigory.github.io/assets/img/GDC/2025/Dynamic-Destruction-in-UE5-with-the-Chaos-Destruction-System/13.png)
 
+为了提升性能，这里对交互的类型，或者说破坏碎片的类型做了区分：
 
+1. One way object：指的是不会二次碎裂的碎片
+2. Two-way object：还会二次碎裂的碎片
+
+针对碎片类型的交互效果做了约束：
+
+1. One way不会与Two-way发生交互
+2. One way之间会采用简单的sphere-sphere交互模拟方式
+
+在使用上，可以实现component级别的自定义，即为不同的component指定从哪一层开始，碎片可以被看成one way
 
 ![](https://gerigory.github.io/assets/img/GDC/2025/Dynamic-Destruction-in-UE5-with-the-Chaos-Destruction-System/14.png)
 
+在不做限制的时候，每一帧有可能会触发多次破碎，也会因此产生大量的碎片，这个会导致性能的失控。
 
+为了控制预算，这里提供了两个参数来实现单帧内破碎频次与碎片数目的控制。
 
 ![](https://gerigory.github.io/assets/img/GDC/2025/Dynamic-Destruction-in-UE5-with-the-Chaos-Destruction-System/15.png)
 
+针对Damage的传导，这里提供了两种机制：
 
+1. Break Propagation：在断裂发生后，断裂处传来的残余strain（用于驱动相邻碎片的进一步断裂）系数
+2. Shock Propagation：不考虑断裂情况时，某个碎片的Strain往相邻碎片传导的系数
 
 ![](https://gerigory.github.io/assets/img/GDC/2025/Dynamic-Destruction-in-UE5-with-the-Chaos-Destruction-System/16.png)
 
-1. 3. 
+为了提升真实性，可能会需要生成大量的细小碎片，而碎片数目过多会导致性能的下降，这里设计了一个Tiny Geo的工具，可以将细小碎片合并到相邻的大尺寸的碎片上，从而实现二者的兼顾。
+
+细小的碎片，可以通过Niagara生成。
 
 ![](https://gerigory.github.io/assets/img/GDC/2025/Dynamic-Destruction-in-UE5-with-the-Chaos-Destruction-System/17.png)
 
-2. 
+接下来看看针对破碎效果的可控性的一些使用建议。
 
 ![](https://gerigory.github.io/assets/img/GDC/2025/Dynamic-Destruction-in-UE5-with-the-Chaos-Destruction-System/18.png)
 
+早期版本中，需要手动实现GC与Anchor Field Actor的连接操作，这个过程存在如下的几点问题：
+
+1. 对于起伏变化的地形而言，这种方式会使得地形与其上的大量GC的连接性的维持变得困难
+2. 与Anchor连接的部分由于经常卡在原地，因此很难一次性激活整个actor
+3. 还需要一个单独的Field Actor，这个增加了管理与维护成本
+
 ![](https://gerigory.github.io/assets/img/GDC/2025/Dynamic-Destruction-in-UE5-with-the-Chaos-Destruction-System/19.png)
 
-1. 
+为了优化上述体验，目前已经可以在fracture模式下降GC的bone单独设置为Anchored或者Kinematic，这个是针对Asset而生效的，也就是说多个Component会共享一份数据。
+
+经过上述设置后：
+
+1. Anchors破碎后，整个actor就可以被一次性激活
+2. 而被设置为Kinematci的碎片则会如期维持在不受影响的状态
 
 ![](https://gerigory.github.io/assets/img/GDC/2025/Dynamic-Destruction-in-UE5-with-the-Chaos-Destruction-System/20.png)
+
+
 
 ![](https://gerigory.github.io/assets/img/GDC/2025/Dynamic-Destruction-in-UE5-with-the-Chaos-Destruction-System/21.png)
 
