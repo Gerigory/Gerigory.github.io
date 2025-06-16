@@ -149,45 +149,57 @@ Root Proxy可以理解为在破碎被触发前，用于替代破坏物进行渲�
 
 ![](https://gerigory.github.io/assets/img/GDC/2025/Dynamic-Destruction-in-UE5-with-the-Chaos-Destruction-System/20.png)
 
-
+如果摩擦力跟restitution采用默认值的话，具有不同质量的碎片，破碎后的效果就看着很相似
 
 ![](https://gerigory.github.io/assets/img/GDC/2025/Dynamic-Destruction-in-UE5-with-the-Chaos-Destruction-System/21.png)
 
-1. 2. 
+通过调整这两个参数，就可以得到更为真实的破碎表现
 
 ![](https://gerigory.github.io/assets/img/GDC/2025/Dynamic-Destruction-in-UE5-with-the-Chaos-Destruction-System/22.png)
 
-1. 1. 
+可以通过物理材质来实现对物理资产的物理参数与物理行为做精细控制：
+
+1. Density参数是现实世界的一个重要的物理参数
+2. 可以通过多种方式设定
+3. 物理参数还可以与音频、特效等效果做绑定
 
 ![](https://gerigory.github.io/assets/img/GDC/2025/Dynamic-Destruction-in-UE5-with-the-Chaos-Destruction-System/23.png)
 
-
+UE中用于实现GC破碎最常用、简便的方式是Field，但是复杂的Field往往会存在性能问题
 
 ![](https://gerigory.github.io/assets/img/GDC/2025/Dynamic-Destruction-in-UE5-with-the-Chaos-Destruction-System/24.png)
 
+这里提供一种轻量的破碎方法，即通过调用ApplyExternalStrain的方式来模拟子弹或者激光的作用。
+
 ![](https://gerigory.github.io/assets/img/GDC/2025/Dynamic-Destruction-in-UE5-with-the-Chaos-Destruction-System/25.png)
 
+替代Field的另种方法是Collision，使用这种方法需要启用Damage Propagation Data与Enable Damage from Collision等属性。
 
+不过这种方法在过于活跃的场景中会存在问题，比如速度过大，就可能会直接穿过去等。
 
 ![](https://gerigory.github.io/assets/img/GDC/2025/Dynamic-Destruction-in-UE5-with-the-Chaos-Destruction-System/26.png)
 
-- 
+想要得到更令人满意的结果，常用的做法是将上述两种方法结合起来
 
 ![](https://gerigory.github.io/assets/img/GDC/2025/Dynamic-Destruction-in-UE5-with-the-Chaos-Destruction-System/27.png)
 
+一个好的破坏效果，往往需要将物理破碎跟特效表现结合起来，UE提供了一个Niagara Data Channel来实现从Chaos Destruction到Niagara System数据与接口的便捷访问。
+
 ![](https://gerigory.github.io/assets/img/GDC/2025/Dynamic-Destruction-in-UE5-with-the-Chaos-Destruction-System/28.png)
 
-
+这里给了个示例来介绍二者是如何结合的。
 
 ![](https://gerigory.github.io/assets/img/GDC/2025/Dynamic-Destruction-in-UE5-with-the-Chaos-Destruction-System/29.png)
 
-
+通过调整参数与策略，可以实现更为复杂的配合效果。
 
 ![](https://gerigory.github.io/assets/img/GDC/2025/Dynamic-Destruction-in-UE5-with-the-Chaos-Destruction-System/30.png)
 
-3. 
+小尺寸的残骸粒子也都是经由Niagara完成绘制，且绘制时的性能消耗，可以通过蓝图属性面板进行控制。
 
 ![](https://gerigory.github.io/assets/img/GDC/2025/Dynamic-Destruction-in-UE5-with-the-Chaos-Destruction-System/31.png)
+
+看看最终的视频效果
 
 ![](https://gerigory.github.io/assets/img/GDC/2025/Dynamic-Destruction-in-UE5-with-the-Chaos-Destruction-System/32.png)
 
@@ -195,19 +207,23 @@ Root Proxy可以理解为在破碎被触发前，用于替代破坏物进行渲�
 
 ![](https://gerigory.github.io/assets/img/GDC/2025/Dynamic-Destruction-in-UE5-with-the-Chaos-Destruction-System/33.png)
 
-
+UE5.5增加了一对Get/Set初始位置的节点，这俩节点可以用于实现数据、状态的恢复
 
 ![](https://gerigory.github.io/assets/img/GDC/2025/Dynamic-Destruction-in-UE5-with-the-Chaos-Destruction-System/34.png)
 
-3. 
+基于这个节点，可以实现破碎表现数据的缓存与播放，步骤如下：
+
+1. 将模拟的过程按照时间顺序缓存下来，数据主要包括各个碎片的transform数据
+2. 之后在运行时按照时间顺序进行播放，并在两个关键帧之间进行插值
+3. 虽然性能上不算非常优秀，但是对于一些相对复杂的模拟效果来说，算是一种非常有效的策略（还可以用于实现网络同步效果）
 
 ![](https://gerigory.github.io/assets/img/GDC/2025/Dynamic-Destruction-in-UE5-with-the-Chaos-Destruction-System/35.png)
 
-4. 
+这个播放的过程，还可以通过曲线来控制速率
 
 ![](https://gerigory.github.io/assets/img/GDC/2025/Dynamic-Destruction-in-UE5-with-the-Chaos-Destruction-System/36.png)
 
-
+在前面的基础上，还可以借助sequencer来实现更为灵活复杂的控制效果
 
 ![](https://gerigory.github.io/assets/img/GDC/2025/Dynamic-Destruction-in-UE5-with-the-Chaos-Destruction-System/37.png)
 
