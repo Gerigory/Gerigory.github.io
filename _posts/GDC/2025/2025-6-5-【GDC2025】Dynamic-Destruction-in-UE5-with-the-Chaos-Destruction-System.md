@@ -15,7 +15,21 @@ description: 本文分享的是Epic Games在GDC 2025上介绍到的一些与Chao
 
 照例，这里对工作内容做一个总结：
 
-1. 
+1. 介绍了如何在不影响表现的前提下，通过调整实现方式，配置等得到更高的运行时性能，包括有：
+   1. 为复杂物件启用Nanite
+   2. 使用Root Proxy作为破碎前的版本
+   3. 善用Remove On Break，Remove On Sleep等属性
+   4. 控制One way object的切换阈值来限制破碎的模拟成本
+   5. 通过Throttling机制限制单帧的耗时
+   6. 通过Tiny Geo Tool对小尺寸碎片做合并处理来降低消耗
+
+2. 介绍了如何提升碎片效果的灵活性与控制力度，包括有如下的一些策略：
+   1. 通过将GC的Bone设置为Anchored或者Kinematic，可以很方便的实现一体式破碎表现，同时能够适配地形等高低起伏变化明显的anchor情景
+   2. 通过调整摩擦力系数跟restitution参数，可以为不同尺寸、质量的碎片实现不同的破碎表现，打破表现同质化的问题。
+   3. 可以通过ApplyExternalStrain的方式来替代复杂的Field逻辑，实现更为灵活且轻便的触发控制
+   4. 在Chaos Destruction的制作中，可以很方便的调用Niagara的相关接口，访问相关参数，从而可以实现破碎效果与特效的便捷联动
+   5. 通过Animated Geometry Collections，可以实现破碎效果的录制与播放，以实现高效的破碎模拟与联机表现，同时还可以借助sequencer等工具实现更为复杂的控制逻辑与表现效果。
+
 
 ---
 
@@ -140,7 +154,7 @@ Root Proxy可以理解为在破碎被触发前，用于替代破坏物进行渲�
 
 ![](https://gerigory.github.io/assets/img/GDC/2025/Dynamic-Destruction-in-UE5-with-the-Chaos-Destruction-System/19.png)
 
-为了优化上述体验，目前已经可以在fracture模式下降GC的bone单独设置为Anchored或者Kinematic，这个是针对Asset而生效的，也就是说多个Component会共享一份数据。
+为了优化上述体验，目前已经可以在fracture模式下将GC的bone单独设置为Anchored或者Kinematic，这个是针对Asset而生效的，也就是说多个Component会共享一份数据。
 
 经过上述设置后：
 
