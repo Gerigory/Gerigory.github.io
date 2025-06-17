@@ -1,6 +1,6 @@
 ---
 layout: post
-title: 【GDC 2011】Lighting You Up In attlefield 3
+title: 【GDC 2011】Lighting You Up In Battlefield 3
 date: 2024-11-15
 img: GDC/2011/Lighting-You-Up-In-Battlefield3/幻灯片1.PNG # Add image post (optional)
 fig-caption: # Add figcaption (optional)
