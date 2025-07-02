@@ -1,7 +1,7 @@
 ---
 layout: post
 title: 【GDC 2015】Rendering the World of Far Cry 4
-date: 2024-11-18
+date: 2025-7-2
 img: GDC/2015/Rendering-the-World-of-Far-Cry4/image1.jpg # Add image post (optional)
 fig-caption: # Add figcaption (optional)
 tags: [Far Cry 4, Rendering, lighting, GDC, 2015]
