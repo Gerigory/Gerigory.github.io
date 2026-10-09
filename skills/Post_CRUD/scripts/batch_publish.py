@@ -58,8 +58,30 @@ def main():
             desc = P.gen_description(sfm, body, title)
             body2 = __import__('re').sub(r'^#\s+.+?\n', '', body, count=1)
             assets_dir = f.parent / (f.stem + '.assets')
+            # 回退：md 引用的 assets 目录名可能与源文件名不一致（如 H1 标题同名目录）
+            # 收集所有候选 assets 目录，按引用逐个解析真实位置
+            cand_dirs = [assets_dir]
+            h1_stem = (h1.group(1).strip() if h1 else f.stem)
+            cand_dirs.append(f.parent / (h1_stem + '.assets'))
+            cand_dirs.append(f.parent / (title + '.assets'))
+            seen_d = set()
+            cand_dirs = [d for d in cand_dirs if d and str(d) not in seen_d and not seen_d.add(str(d))]
             img_rel_dir = '/'.join(x for x in [cat, year, slug] if x)
             used_images = []
+            img_src_map = {}
+
+            def resolve_src(ref_dec):
+                """在候选目录中找到引用图片的真实位置。"""
+                fname = Path(ref_dec).name
+                for d in cand_dirs:
+                    cand = d / fname
+                    if cand.exists():
+                        return str(cand)
+                # 引用路径本身可能含子目录结构，直接相对源目录解析
+                direct = f.parent / ref_dec.lstrip('./')
+                if direct.exists():
+                    return str(direct)
+                return None
 
             def repl(m):
                 alt, ref = m.group(1), m.group(2)
@@ -70,6 +92,9 @@ def main():
                     ref_clean = ref.split(' ')[0]
                 ref_dec = __import__('urllib.parse', fromlist=['parse']).unquote(ref_clean)
                 fname = Path(ref_dec).name
+                src_real = resolve_src(ref_dec)
+                if src_real:
+                    img_src_map[fname] = src_real
                 used_images.append((ref_dec, fname))
                 return '![' + alt + '](' + P.SITE_BASE + '/' + img_rel_dir + '/' + __import__('urllib.parse', fromlist=['parse']).quote(fname) + ')'
 
@@ -92,6 +117,7 @@ def main():
                 'img_dir': str(site_root / 'assets' / 'img' / Path(*[x for x in [cat, year, slug] if x])),
                 'assets_dir': str(assets_dir),
                 'used_images': [u[1] for u in used_images],
+                'img_src_map': img_src_map,
             }
             copied = P.write_output(plan, new_text, args.compress)
             results.append({**{k: v for k, v in plan.items()}, 'images_copied': copied, 'status': 'ok'})

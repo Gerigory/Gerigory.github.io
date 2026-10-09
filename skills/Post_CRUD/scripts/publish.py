@@ -209,12 +209,23 @@ def write_output(plan, new_text, compress):
     from compress_assets import compress_one
     img_dir = Path(plan['img_dir'])
     img_dir.mkdir(parents=True, exist_ok=True)
+    src_map = plan.get('img_src_map') or {}
     copied = 0
     for fname in plan['used_images']:
-        src_img = Path(plan['assets_dir']) / fname
+        src_img = Path(src_map.get(fname) or (Path(plan['assets_dir']) / fname))
         if not src_img.exists():
-            print(json.dumps({'warning': 'image not found: ' + str(src_img)}, ensure_ascii=False))
-            continue
+            # 回退：尝试源目录下其他 assets 目录（H1 同名等）
+            fallbacks = list(Path(plan['assets_dir']).parent.glob('*.assets'))
+            found = False
+            for d in fallbacks:
+                cand = d / fname
+                if cand.exists():
+                    src_img = cand
+                    found = True
+                    break
+            if not found:
+                print(json.dumps({'warning': 'image not found: ' + fname}, ensure_ascii=False))
+                continue
         dst_img = img_dir / fname
         if compress:
             compress_one(src_img, dst_img, 1600, 300 * 1024)
