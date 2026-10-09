@@ -35,4 +35,4 @@ plugins:
 # paginate: 8
 paginate_path: "/page/:num"
 
-exclude: ["node_modules", "gulpfile.js", "package.json", "yarn.lock"]
+exclude: ["node_modules", "gulpfile.js", "package.json", "yarn.lock", "skills", "Private", "commit.sh", "Commit-all.bat", "commit-all-after-update.sh", "Gemfile", "LICENSE", "README.md"]
