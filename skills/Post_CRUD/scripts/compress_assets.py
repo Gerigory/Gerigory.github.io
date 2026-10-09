@@ -41,32 +41,42 @@ def compress_one(src: Path, dst: Path, max_side: int, max_bytes: int):
     if scale < 1.0:
         img = img.resize((max(1, int(w * scale)), max(1, int(h * scale))), Image.LANCZOS)
     mode = img.mode
-    # 先尝试量化（调色板 256 色 + 抖动）
+    # 依次尝试：256色量化 → 128色量化 → 无损 optimize，取最小
     best = None
+    best_img = None
     if mode in ('RGB', 'RGBA', 'P'):
-        try:
-            q = img.quantize(colors=256, method=Image.FASTOCTREE, dither=Image.FLOYDSTEINBERG)
-            q.save(dst, 'PNG', optimize=True)
-            if best is None or dst.stat().st_size < best:
-                best = dst.stat().st_size
-        except Exception:
-            pass
+        for colors in (256, 128):
+            try:
+                q = img.quantize(colors=colors, method=Image.FASTOCTREE, dither=Image.FLOYDSTEINBERG)
+                tmp = dst.with_suffix(f'.q{colors}.png')
+                q.save(tmp, 'PNG', optimize=True)
+                sz = tmp.stat().st_size
+                if best is None or sz < best:
+                    if best_img is not None:
+                        best_img.unlink(missing_ok=True)
+                    best, best_img = sz, tmp
+                else:
+                    tmp.unlink(missing_ok=True)
+            except Exception:
+                pass
     # 无损 optimize（保持全色深）
     try:
         tmp = dst.with_suffix('.tmp.png')
         img.save(tmp, 'PNG', optimize=True)
         tmp_size = tmp.stat().st_size
         if best is None or tmp_size < best:
-            tmp.replace(dst)
-            best = tmp_size
+            if best_img is not None:
+                best_img.unlink(missing_ok=True)
+            best, best_img = tmp_size, tmp
         else:
             tmp.unlink(missing_ok=True)
     except Exception:
         pass
-    if best is None:
+    if best_img is None:
         shutil.copy2(src, dst)
         return {'file': dst.name, 'action': 'copy-fallback', 'src_bytes': orig_bytes,
                 'dst_bytes': dst.stat().st_size}
+    best_img.replace(dst)
     # 若压缩后反而更大（罕见），用原文件
     if dst.stat().st_size >= orig_bytes:
         shutil.copy2(src, dst)
