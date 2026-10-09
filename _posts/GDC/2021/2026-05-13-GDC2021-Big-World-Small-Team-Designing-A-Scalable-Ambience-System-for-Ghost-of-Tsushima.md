@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "【GDC 2021】GDC2021 - Big World, Small Team - Designing A Scalable Ambience System for Ghost of Tsushima"
+title: "【GDC 2021】Big World, Small Team - Designing A Scalable Ambience System for Ghost of Tsushima"
 date: 2026-05-13
 img: GDC/2021/GDC2021-Big-World-Small-Team-Designing-A-Scalable-Ambience-System-for-Ghost-of-Tsushima/slide_001.png # Add image post (optional)
 fig-caption: # Add figcaption (optional)

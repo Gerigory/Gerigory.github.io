@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "【GDC 2022】GDC2022 - Adventures with Deferred Texturing in Horizon Forbidden West"
+title: "【GDC 2022】Adventures with Deferred Texturing in Horizon Forbidden West"
 date: 2026-05-11
 img: GDC/2022/GDC2022-Adventures-with-Deferred-Texturing-in-Horizon-Forbidden-West/slide_001.png # Add image post (optional)
 fig-caption: # Add figcaption (optional)

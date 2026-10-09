@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "【Siggraph 2020】Siggraph2020 - Real-time samuraicinema lighting atmosphere and tonemapping"
+title: "【Siggraph 2020】Real-time samuraicinema lighting atmosphere and tonemapping"
 date: 2020-08-01
 img: Siggraph/2020/Siggraph2020-Real-time-samuraicinema-lighting-atmosphere-and-tonemapping/slide_001.png # Add image post (optional)
 fig-caption: # Add figcaption (optional)

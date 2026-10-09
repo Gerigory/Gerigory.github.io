@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "【GDC 2018】GDC2018 - The Vegetation of Horizon Zero Dawn"
+title: "【GDC 2018】The Vegetation of Horizon Zero Dawn"
 date: 2026-05-13
 img: GDC/2018/GDC2018-The-Vegetation-of-Horizon-Zero-Dawn/slide_001.png # Add image post (optional)
 fig-caption: # Add figcaption (optional)

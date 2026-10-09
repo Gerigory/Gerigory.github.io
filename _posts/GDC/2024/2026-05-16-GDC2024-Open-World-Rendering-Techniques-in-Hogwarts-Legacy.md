@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "【GDC 2024】GDC2024 - Open World Rendering Techniques in 'Hogwarts Legacy'"
+title: "【GDC 2024】Open World Rendering Techniques in 'Hogwarts Legacy'"
 date: 2026-05-16
 img: GDC/2024/GDC2024-Open-World-Rendering-Techniques-in-Hogwarts-Legacy/slide_001.png # Add image post (optional)
 fig-caption: # Add figcaption (optional)

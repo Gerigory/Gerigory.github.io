@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "【GDC 2018】GDC2018 - Next Level Render in 'World of Tanks' PC 2018"
+title: "【GDC 2018】Next Level Render in 'World of Tanks' PC 2018"
 date: 2026-04-27
 img: GDC/2018/GDC2018-Next-Level-Render-in-World-of-Tanks-PC-2018/slide_001.png # Add image post (optional)
 fig-caption: # Add figcaption (optional)

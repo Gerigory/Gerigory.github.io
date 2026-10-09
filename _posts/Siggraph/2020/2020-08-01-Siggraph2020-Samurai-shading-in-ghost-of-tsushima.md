@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "【Siggraph 2020】Siggraph2020 - Samurai shading in ghost of tsushima"
+title: "【Siggraph 2020】Samurai shading in ghost of tsushima"
 date: 2020-08-01
 img: Siggraph/2020/Siggraph2020-Samurai-shading-in-ghost-of-tsushima/slide_001.png # Add image post (optional)
 fig-caption: # Add figcaption (optional)

@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "【GDC 2025】GDC2025 - Rendering 'Assassin's Creed Shadows'"
+title: "【GDC 2025】Rendering 'Assassin's Creed Shadows'"
 date: 2026-05-14
 img: GDC/2025/GDC2025-Rendering-Assassin-s-Creed-Shadows/slide_001.png # Add image post (optional)
 fig-caption: # Add figcaption (optional)

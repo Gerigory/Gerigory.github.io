@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "【GDC 2024】GDC2024 - Raytracing in Snowdrop - An Optimized Lighting Architecture"
+title: "【GDC 2024】Raytracing in Snowdrop - An Optimized Lighting Architecture"
 date: 2024-03-01
 img: GDC/2024/GDC2024-Raytracing-in-Snowdrop-An-Optimized-Lighting-Architecture/slide_001.png # Add image post (optional)
 fig-caption: # Add figcaption (optional)

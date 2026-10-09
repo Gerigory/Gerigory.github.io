@@ -115,8 +115,31 @@ def derive_tags(source_name, fm, cat, year):
     return out[:8]
 
 
+def clean_title_prefix(title):
+    """去掉【来源 年份】后跟的冗余来源前缀（如 '【GDC 2021】GDC2021 - Xxx' → '【GDC 2021】Xxx'）。"""
+    hm = re.match(r'^(【[^】]*】)(.*)$', title)
+    if not hm:
+        return title
+    head, rest = hm.group(1), hm.group(2)
+    pats = [
+        re.compile(r'^(GDC|Siggraph|UnrealFest|UFSH)\s?\d{0,4}\s*-\s*'),
+        re.compile(r'^Unreal\s?Fest\s?\d{0,4}\s*-\s*'),
+        re.compile(r'^\[UFSH\d{4}\]\s*'),
+    ]
+    while True:
+        stripped = False
+        for pat in pats:
+            nm = pat.match(rest)
+            if nm:
+                rest = rest[nm.end():]
+                stripped = True
+        if not stripped:
+            break
+    return head + rest.strip()
+
+
 def gen_description(fm, body, title):
-    # 优先找“核心结论/主题”要点行的第一个完整句
+    """从正文摘要块提取一句话中文 description。"""
     m = re.search(r'##\s*摘要[^\n]*\n+(.+?)(?=\n#|\n!|\Z)', body, re.S)
     if m:
         block = m.group(1)
@@ -147,6 +170,7 @@ def convert(source, site_root, args):
         m = re.search(r'(?:Unreal\s*Fest|UFSH)\D*(\d{4})', source.stem, re.I)
         if m:
             title = '【Unreal Fest ' + m.group(1) + '】' + title
+    title = clean_title_prefix(title)
     date = args.date or sfm.get('date') or '2026-10-09'
     date = re.sub(r'\s+.*$', '', date)
     if not re.match(r'^\d{4}-\d{2}-\d{2}$', date):
@@ -260,6 +284,7 @@ def main():
         m = re.search(r'(?:Unreal\s*Fest|UFSH)\D*(\d{4})', source.stem, re.I)
         if m:
             title = '【Unreal Fest ' + m.group(1) + '】' + title
+    title = clean_title_prefix(title)
     date = args.date or sfm.get('date') or '2026-10-09'
     date = re.sub(r'\s+.*$', '', date)
     if not re.match(r'^\d{4}-\d{2}-\d{2}$', date):

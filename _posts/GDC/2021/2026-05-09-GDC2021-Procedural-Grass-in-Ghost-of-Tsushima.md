@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "【GDC 2021】GDC2021 - Procedural Grass in Ghost of Tsushima"
+title: "【GDC 2021】Procedural Grass in Ghost of Tsushima"
 date: 2026-05-09
 img: GDC/2021/GDC2021-Procedural-Grass-in-Ghost-of-Tsushima/slide_001.png # Add image post (optional)
 fig-caption: # Add figcaption (optional)

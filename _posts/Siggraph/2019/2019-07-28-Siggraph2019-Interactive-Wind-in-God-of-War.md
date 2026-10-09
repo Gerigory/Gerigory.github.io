@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "【Siggraph 2019】Siggraph2019 - Interactive Wind in God of War"
+title: "【Siggraph 2019】Interactive Wind in God of War"
 date: 2019-07-28
 img: Siggraph/2019/Siggraph2019-Interactive-Wind-in-God-of-War/slide_001.png # Add image post (optional)
 fig-caption: # Add figcaption (optional)

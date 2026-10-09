@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "【GDC 2024】GDC2024 - 144FPS Rendering on Mobile Frame Prediction in Arena Breakout"
+title: "【GDC 2024】144FPS Rendering on Mobile Frame Prediction in Arena Breakout"
 date: 2026-05-15
 img: GDC/2024/GDC2024-144FPS-Rendering-on-Mobile-Frame-Prediction-in-Arena-Breakout/slide_001.png # Add image post (optional)
 fig-caption: # Add figcaption (optional)

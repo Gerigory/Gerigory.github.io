@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "【Unreal Fest 2024】UnrealFest2024 - Unreal Fest 2024 - Optimizing UE5 Advanced Rendering, Graphics Performance, and Memory Management"
+title: "【Unreal Fest 2024】Optimizing UE5 Advanced Rendering, Graphics Performance, and Memory Management"
 date: 2026-05-17
 img: UnrealFest/UnrealFest2024-Unreal-Fest2024-Optimizing-UE5-Advanced-Rendering-Graphics-Performance-and-Memory-Management/slide_001.png # Add image post (optional)
 fig-caption: # Add figcaption (optional)

@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "【GDC 2024】GDC2024 - Ray Tracing in Snowdrop Scene Representation and Custom BVH"
+title: "【GDC 2024】Ray Tracing in Snowdrop Scene Representation and Custom BVH"
 date: 2024-03-01
 img: GDC/2024/GDC2024-Ray-Tracing-in-Snowdrop-Scene-Representation-and-Custom-BVH/slide_001.png # Add image post (optional)
 fig-caption: # Add figcaption (optional)

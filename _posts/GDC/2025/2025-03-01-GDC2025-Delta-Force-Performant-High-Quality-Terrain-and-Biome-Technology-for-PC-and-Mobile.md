@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "【GDC 2025】GDC2025-'Delta Force' Performant High-Quality Terrain and Biome Technology for PC and Mobile"
+title: "【GDC 2025】'Delta Force' Performant High-Quality Terrain and Biome Technology for PC and Mobile"
 date: 2025-03-01
 img: GDC/2025/GDC2025-Delta-Force-Performant-High-Quality-Terrain-and-Biome-Technology-for-PC-and-Mobile/slide_001.png # Add image post (optional)
 fig-caption: # Add figcaption (optional)

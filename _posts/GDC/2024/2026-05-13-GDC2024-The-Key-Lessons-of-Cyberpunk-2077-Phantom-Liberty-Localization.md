@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "【GDC 2024】GDC2024 - The Key Lessons of Cyberpunk 2077 - Phantom Liberty Localization"
+title: "【GDC 2024】The Key Lessons of Cyberpunk 2077 - Phantom Liberty Localization"
 date: 2026-05-13
 img: GDC/2024/GDC2024-The-Key-Lessons-of-Cyberpunk-2077-Phantom-Liberty-Localization/slide_001.png # Add image post (optional)
 fig-caption: # Add figcaption (optional)

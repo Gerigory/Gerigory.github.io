@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "【GDC 2023】GDC2023 - Rendering God of War - Ragnarok"
+title: "【GDC 2023】Rendering God of War - Ragnarok"
 date: 2023-03-01
 img: GDC/2023/GDC2023-Rendering-God-of-War-Ragnarok/slide_001.png # Add image post (optional)
 fig-caption: # Add figcaption (optional)

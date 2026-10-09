@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "【GDC 2014】GDC2014 - Advanced Visual Effects with DirectX 11 Grass, Fur and Hair"
+title: "【GDC 2014】Advanced Visual Effects with DirectX 11 Grass, Fur and Hair"
 date: 2026-04-28
 img: GDC/2014/GDC2014-Advanced-Visual-Effects-with-DirectX-11-Grass-Fur-and-Hair/slide_001.png # Add image post (optional)
 fig-caption: # Add figcaption (optional)

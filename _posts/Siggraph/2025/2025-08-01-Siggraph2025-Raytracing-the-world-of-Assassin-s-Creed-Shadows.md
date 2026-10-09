@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "【Siggraph 2025】Siggraph2025 - Raytracing the world of Assassin's Creed Shadows"
+title: "【Siggraph 2025】Raytracing the world of Assassin's Creed Shadows"
 date: 2025-08-01
 img: Siggraph/2025/Siggraph2025-Raytracing-the-world-of-Assassin-s-Creed-Shadows/slide_001.png # Add image post (optional)
 fig-caption: # Add figcaption (optional)

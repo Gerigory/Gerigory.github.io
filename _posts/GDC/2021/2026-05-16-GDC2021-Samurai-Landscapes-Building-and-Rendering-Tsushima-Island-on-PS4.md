@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "【GDC 2021】GDC2021 - Samurai Landscapes Building and Rendering Tsushima Island on PS4"
+title: "【GDC 2021】Samurai Landscapes Building and Rendering Tsushima Island on PS4"
 date: 2026-05-16
 img: GDC/2021/GDC2021-Samurai-Landscapes-Building-and-Rendering-Tsushima-Island-on-PS4/slide_001.png # Add image post (optional)
 fig-caption: # Add figcaption (optional)

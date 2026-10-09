@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "【GDC 2023】GDC2023 - BroadLeaf Real-Time Cinematic Rendering of Large-Scale Forests"
+title: "【GDC 2023】BroadLeaf Real-Time Cinematic Rendering of Large-Scale Forests"
 date: 2026-04-24
 img: GDC/2023/GDC2023-BroadLeaf-Real-Time-Cinematic-Rendering-of-Large-Scale-Forests/slide_001.png # Add image post (optional)
 fig-caption: # Add figcaption (optional)
